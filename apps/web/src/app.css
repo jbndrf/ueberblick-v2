@@ -1,0 +1,16 @@
+/* The one place the theme enters the app (B-015): v3's design system lives in packages/ui. */
+@import '@ueberblick/ui/app.css';
+
+/* Tailwind generates the classes used by this app's own markup. */
+@source './';
+
+/*
+ * Focus ring (WP-716, WCAG 2.4.11/2.4.13): the kit's own ring is `ring-ring/50`, half-transparent slate, under 3:1
+ * against the page. Unlayered, so it wins over the kit's utilities: one solid 2px ring in the foreground colour (the
+ * strongest contrast the theme has, in light and dark), offset so it never merges with a dark button's fill.
+ */
+:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 2px;
+  box-shadow: none;
+}

@@ -1,0 +1,31 @@
+scenario: minor_release_removing_option
+title: "Publishing a minor version that removes an option is refused; the same change is allowed in a major"
+foundations: [F7, F13]
+capabilities: [semver_check]
+given:
+  template: templates/baumkataster/1.1.0.yaml
+when:
+  - id: s1                                    # candidate 1.2.0 drops vitalitaet option v4
+    kind: publish
+    candidate: candidates/baumkataster/1.2.0.yaml
+    previous: templates/baumkataster/1.1.0.yaml
+  - id: s2                                    # 1.0.0 -> 1.1.0 only adds a property: fine
+    kind: publish
+    candidate: templates/baumkataster/1.1.0.yaml
+    previous: templates/baumkataster/1.0.0.yaml
+  - id: s3                                    # 2.0.0 renames an option (core reports option_removed): allowed in a major, and it ships a migration
+    kind: publish
+    candidate: templates/baumkataster/2.0.0.yaml
+    previous: templates/baumkataster/1.1.0.yaml
+then:
+  steps:
+    s1:
+      outcome: refused
+      breaking:
+        - { path: types.baum.properties.vitalitaet.options.v4, change: option_removed }
+      required_bump: major
+    s2: { outcome: accepted, breaking: [] }
+    s3:
+      outcome: accepted
+      breaking:
+        - { path: types.baum.properties.stage.options.kontrolliert, change: option_removed, migration: "1 -> 2" }

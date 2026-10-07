@@ -1,0 +1,13 @@
+# Two open reports by different reporters, on top of seeds/stadtwerke.yaml.
+features:
+  m_mia:
+    type: meldung
+    properties: { geometrie: { type: Point, coordinates: [7.10, 50.75] }, kategorie: strasse, beschreibung: { de: Schlagloch }, melder: mia, status: offen, prioritaet: normal, gemeldet_am: "2026-05-01" }
+  m_max:
+    type: meldung
+    properties: { geometrie: { type: Point, coordinates: [7.12, 50.76] }, kategorie: muell, beschreibung: { de: Sperrmüll }, melder: max, status: offen, prioritaet: hoch, gemeldet_am: "2026-05-01" }
+  m_erledigt:
+    type: meldung
+    properties: { geometrie: { type: Point, coordinates: [7.13, 50.77] }, kategorie: beleuchtung, beschreibung: { de: Laterne }, melder: mia, status: erledigt, prioritaet: niedrig, gemeldet_am: "2026-04-01" }
+participants:
+  max: { roles: [melder] }

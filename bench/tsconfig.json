@@ -1,0 +1,20 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "incremental": true,
+    "tsBuildInfoFile": "../node_modules/.cache/tsc/bench.tsbuildinfo",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "allowJs": true,
+    "checkJs": false,
+    "noEmit": true,
+    "types": ["node", "vite/client"]
+  },
+  "include": [
+    "./**/*.ts",
+    "../packages/core/src/**/*.d.ts",
+    "../packages/*/src/paraglide/**/*.js",
+    "../scripts/**/*.d.mts",
+    "../vitest.config.ts"
+  ],
+  "exclude": ["**/node_modules", "**/dist", "**/*.planted*", "**/*.planted/**"]
+}

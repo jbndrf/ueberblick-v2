@@ -1,0 +1,17 @@
+{
+  "name": "@ueberblick/tool-photo",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "sideEffects": false,
+  "description": "Photo tool: captures or picks an image, downsizes it in a worker, strips location, produces a file value.",
+  "scripts": {
+    "i18n": "paraglide-js compile --project ./project.inlang --outdir ./src/paraglide"
+  },
+  "dependencies": {
+    "@ueberblick/ui": "*"
+  }
+}

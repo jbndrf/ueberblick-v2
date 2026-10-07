@@ -1,0 +1,25 @@
+scenario: boundary_within_vs_intersects
+title: "A point exactly on the boundary is not within, but does intersect (OGC Simple Features semantics)"
+foundations: [F5, F9, F11]
+capabilities: [boundary_case, derived_relation, point_in_polygon]
+given:
+  project: projects/musterstadt-plain.yaml
+  include: [seeds/musterstadt-geo.yaml]
+  now: "2026-05-01T08:00:00Z"
+when:
+  - id: s1
+    kind: view
+    view: sync_scope
+    actor: vera
+    type: baum
+    filter: "self.randlage.exists(a, a.name == 'Spielplatz Nord')"
+    comment: a point on the boundary counts as touching the area; a point in the hole does not
+then:
+  steps:
+    s1: { ids: [t_in, t_boundary] }
+  edges:
+    - { from: t_boundary, relation: randlage, to: park, derived: true }
+    - { from: t_in, relation: randlage, to: park, derived: true }
+  edges_absent:
+    - { from: t_boundary, relation: flaeche, to: park }        # not within: boundary is not interior
+    - { from: t_hole, relation: randlage, to: park }           # the hole is outside the polygon

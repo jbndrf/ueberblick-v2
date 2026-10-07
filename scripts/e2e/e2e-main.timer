@@ -1,0 +1,11 @@
+# systemd --user timer: e2e on main every 5 hours at an off-minute (owner 2026-10-04: "maybe every 5h") (WP-978). Install: see docs/process/e2e.md.
+[Unit]
+Description=Run e2e on main every 5 hours
+
+[Timer]
+OnCalendar=*-*-* 00/5:17:00
+RandomizedDelaySec=300
+Persistent=true
+
+[Install]
+WantedBy=timers.target

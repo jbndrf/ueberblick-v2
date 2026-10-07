@@ -1,0 +1,29 @@
+scenario: rule_creates_referenced_feature
+title: "A poor inspection triggers a rule that creates a measure feature holding a reference to the tree"
+foundations: [F3, F4, F9]
+capabilities: [rule_chain, reference, bind, no_geometry]
+given:
+  project: projects/musterstadt-plain.yaml
+  include: [seeds/musterstadt-geo.yaml]
+  now: "2026-05-01T08:00:00Z"
+when:
+  - id: s1
+    kind: run
+    task: kontrolle
+    actor: anna
+    feature: t_in
+    input: { vitalitaet: "v3", befund: Pilzbefall am Stammfuß, foto: [{ sha256: "aa11", name: stamm.jpg, mime: image/jpeg }] }
+then:
+  steps:
+    s1:
+      outcome: accepted
+      observations:
+        - { feature: t_in, property: vitalitaet, result: "v3" }
+        - { feature: t_in, property: stage, result: massnahme }
+        - { feature: t_in, property: foto, result: [{ sha256: "aa11", name: stamm.jpg, mime: image/jpeg }] }
+      rule_runs:                          # a system run in the same transaction, caused_by the run above
+        - { rule: massnahme_anlegen.massnahme_bei_schaden, task: massnahme_anlegen, actor_kind: system, feature: $new:m1, outcome: accepted, depth: 1 }
+  features:
+    m1: { type: massnahme, has_geometry: false, properties: { baum: t_in, art: schnitt } }
+  edges:
+    - { from: m1, relation: baum, to: t_in, derived: false }      # a reference is an edge, too

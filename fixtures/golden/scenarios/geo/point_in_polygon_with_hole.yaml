@@ -1,0 +1,24 @@
+scenario: point_in_polygon_with_hole
+title: "within() honours holes; the derived relation gives one edge for the tree outside the hole only"
+foundations: [F9, F11]
+capabilities: [derived_relation, point_in_polygon, polygon_hole]
+given:
+  project: projects/musterstadt-plain.yaml
+  include: [seeds/musterstadt-geo.yaml]
+  now: "2026-05-01T08:00:00Z"
+when:
+  - id: s1
+    kind: view
+    view: sync_scope
+    actor: vera
+    type: baum
+    filter: "self.flaeche.name == 'Spielplatz Nord'"
+    comment: traversal over the derived relation
+then:
+  steps:
+    s1: { ids: [t_in] }
+  edges:
+    - { from: t_in, relation: flaeche, to: park, derived: true }
+  edges_absent:
+    - { from: t_hole, relation: flaeche, to: park }            # in the hole: not within
+    - { from: t_out, relation: flaeche, to: park }

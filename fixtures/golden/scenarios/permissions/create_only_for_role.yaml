@@ -1,0 +1,43 @@
+scenario: create_only_for_role
+title: "Only roles listed under create may create a feature; a required geometry must be present"
+foundations: [F3, F4, F6]
+capabilities: [permission_create, odk_required]
+given:
+  project: projects/musterstadt-plain.yaml
+  participants:
+    anna: { roles: [kontrolle] }
+    bernd: { roles: [bauhof] }
+  now: "2026-05-01T08:00:00Z"
+when:
+  - id: s1
+    kind: run
+    task: erfassen
+    actor: bernd
+    creates: $new:t1
+    input: { geometrie: { type: Point, coordinates: [7.10, 50.73] }, vitalitaet: "v1" }
+  - id: s2                                # inspector: geometry missing
+    kind: run
+    task: erfassen
+    actor: anna
+    creates: $new:t2
+    input: { vitalitaet: "v1" }
+  - id: s3
+    kind: run
+    task: erfassen
+    actor: anna
+    creates: $new:t3
+    input: { geometrie: { type: Point, coordinates: [7.10, 50.73] }, vitalitaet: "v1" }
+then:
+  steps:
+    s1: { outcome: refused, refusal: not_permitted, no_trace: true }
+    s2: { outcome: refused, refusal: geometry_required, no_trace: true }
+    s3:
+      outcome: accepted
+      observations:
+        - { feature: $new:t3, property: $type, result: baum }
+        - { feature: $new:t3, property: stage, result: erfasst }          # default applied
+        - { feature: $new:t3, property: faellig_am, result: "2027-05-01" }
+  features:
+    t3: { type: baum, properties: { stage: erfasst } }
+    t1: { exists: false }
+    t2: { exists: false }

@@ -1,0 +1,48 @@
+scenario: geometry_z_roundtrip
+title: "H1. A feature with 3D (Z) geometry keeps every coordinate through plan, fold, sync snapshot and export"
+foundations: [F4, F11, F12]
+capabilities: [h1_z_geometry, no_geometry]
+given:
+  project: projects/ordnungsamt-veranstaltungen.yaml
+  participants:
+    otto: { roles: [sachbearbeiter] }
+  now: "2026-05-01T08:00:00Z"
+when:
+  - id: s1                                # a building footprint with Z (metres above ellipsoid) and an external glTF model asset
+    kind: run
+    task: gebaeude_erfassen
+    actor: otto
+    creates: $new:g1
+    input:
+      name: Stadthalle
+      geometrie:
+        type: Polygon
+        coordinates:
+          - [[7.1000, 50.7300, 62.5], [7.1010, 50.7300, 62.5], [7.1010, 50.7305, 71.0], [7.1000, 50.7305, 71.0], [7.1000, 50.7300, 62.5]]
+      modell: [{ sha256: "cc33", name: stadthalle.glb, mime: model/gltf-binary }]
+  - id: s2
+    kind: export
+    format: geojson
+    actor: otto
+    type: gebaeude
+  - id: s3                                # the same feature as a device receives it in a snapshot page
+    kind: view
+    view: sync_scope
+    actor: otto
+    type: gebaeude
+    limit_properties: [geometrie]
+then:
+  steps:
+    s1:
+      outcome: accepted
+      observations:
+        - { feature: $new:g1, property: geometrie, result: identical_to_input }
+    s2:
+      features:
+        - geometry: identical_to_input          # RFC 7946: positions keep their third element
+    s3:
+      rows: { $new:g1: { geometrie: identical_to_input } }
+  features:
+    g1:
+      type: gebaeude
+      derived: { bbox_3d: [7.1000, 50.7300, 62.5, 7.1010, 50.7305, 71.0], anchor_has_z: true }

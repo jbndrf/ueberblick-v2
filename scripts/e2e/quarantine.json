@@ -1,0 +1,29 @@
+{
+  "about": "WP-1019: specs red on main at workers=1. A train is not refused for them. Each entry needs suite, file (repo-relative), line, lane (who fixes it), since (date) and a note. Delete an entry in the commit that fixes it; the run reports a stale one.",
+  "entries": [
+    {
+      "suite": "apps-web",
+      "file": "apps/web/e2e/admin/builder-form-editor.spec.ts",
+      "line": 106,
+      "lane": "lead-a",
+      "since": "2026-10-05",
+      "note": "WP-1053 removed the buttons; rewrite to drag later (token budget)"
+    },
+    {
+      "suite": "apps-web",
+      "file": "apps/web/e2e/admin/builder-form-editor.spec.ts",
+      "line": 206,
+      "lane": "lead-a",
+      "since": "2026-10-05",
+      "note": "WP-1053 removed the buttons; rewrite to drag later (token budget)"
+    },
+    {
+      "suite": "apps-web",
+      "file": "apps/web/e2e/admin/builder-linked-field.spec.ts",
+      "line": 70,
+      "lane": "lead-a",
+      "since": "2026-10-05",
+      "note": "WP-1053 removed the buttons; rewrite to drag later (token budget)"
+    }
+  ]
+}

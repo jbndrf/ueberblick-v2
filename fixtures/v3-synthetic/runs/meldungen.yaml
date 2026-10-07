@@ -1,0 +1,61 @@
+# Recorded v3 task runs on fixtures/v3-synthetic/config/meldungen.yaml (synthetic).
+- id: melden-ok
+  workflow: meldung
+  task: melden
+  actor: { id: emma, roles: [buerger] }
+  input: { text: Schlagloch vor Hausnummer 4 }
+  geometry: { type: Point, coordinates: [11.58, 48.14] }
+  recorded: { outcome: accepted, stage: neu, values: { text: Schlagloch vor Hausnummer 4 } }
+- id: melden-wrong-role
+  workflow: meldung
+  task: melden
+  actor: { id: amtsperson, roles: [amt] }
+  input: { text: Schlagloch vor Hausnummer 4 }
+  recorded: { outcome: refused, reason: role condition }
+- id: zurueckziehen-owner
+  workflow: meldung
+  task: zurueckziehen
+  actor: { id: emma, roles: [buerger] }
+  instance: { stage: neu, createdBy: emma, values: { text: Schlagloch } }
+  recorded: { outcome: accepted, stage: erledigt }
+- id: zurueckziehen-not-owner
+  workflow: meldung
+  task: zurueckziehen
+  actor: { id: paul, roles: [buerger] }
+  instance: { stage: neu, createdBy: emma, values: { text: Schlagloch } }
+  recorded: { outcome: refused, reason: ownership condition }
+- id: zurueckziehen-in-progress
+  workflow: meldung
+  task: zurueckziehen
+  actor: { id: emma, roles: [buerger] }
+  instance: { stage: in_arbeit, createdBy: emma, values: { text: Schlagloch } }
+  recorded: { outcome: refused, reason: stage condition }
+# The workflow is private: only the creator sees an instance (v3 task_runs.js, the same rule as the list rule).
+- id: bearbeiten-private
+  workflow: meldung
+  task: bearbeiten
+  actor: { id: amtsperson, roles: [amt] }
+  instance: { stage: neu, createdBy: emma, values: { text: Schlagloch } }
+  input: { prio: hoch }
+  recorded: { outcome: refused, reason: private instance of another participant }
+- id: bearbeiten-ok
+  workflow: meldung
+  task: bearbeiten
+  actor: { id: amtsperson, roles: [amt] }
+  instance: { stage: neu, createdBy: amtsperson, values: { text: Schlagloch } }
+  input: { prio: hoch }
+  recorded: { outcome: accepted, stage: in_arbeit, values: { prio: hoch } }
+- id: bearbeiten-citizen
+  workflow: meldung
+  task: bearbeiten
+  actor: { id: emma, roles: [buerger] }
+  instance: { stage: neu, createdBy: emma, values: { text: Schlagloch } }
+  input: { prio: hoch }
+  recorded: { outcome: refused, reason: role condition }
+- id: bearbeiten-done
+  workflow: meldung
+  task: bearbeiten
+  actor: { id: amtsperson, roles: [amt] }
+  instance: { stage: erledigt, createdBy: amtsperson, values: { text: Schlagloch } }
+  input: { prio: hoch }
+  recorded: { outcome: refused, reason: stage condition }

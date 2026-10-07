@@ -1,0 +1,10 @@
+schema: ueberblick/1
+extends: baumkataster@1
+inputs: { kontrollintervall_monate: 12 }
+add:
+  map.layers.flurkarte:
+    label: { de: Flurkarte, en: Cadastral map }
+    kind: overlay
+    source: { type: wms, url: "https://geoportal.example.de/wms/flur", layers: flurstuecke }
+    opacity: 0.7
+    roles: [verwaltung]

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <!-- Theme before first paint (no flash): the same rule as mode-watcher (stored mode, else the system setting). -->
+    <script nonce="%sveltekit.nonce%">
+      (function () {
+        try {
+          var m = localStorage.getItem('mode-watcher-mode') || 'system';
+          var dark = m === 'dark' || (m === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.classList.toggle('dark', dark);
+        } catch (e) {}
+      })();
+    </script>
+    <meta name="theme-color" content="#000000" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+    <!-- Auto-update (WP-631, v3 +layout.svelte:81-90): a new build's worker takes over at once; the page reloads into it
+         unless this is the first install (nothing outdated) or a form is open (retry every 5 s; drafts are kept anyway). -->
+    <!-- update:start -->
+    <script nonce="%sveltekit.nonce%">
+      (function () {
+        var sw = navigator.serviceWorker;
+        if (!sw) return;
+        var controlled = !!sw.controller;
+        function reloadWhenIdle() {
+          if (document.querySelector('form')) setTimeout(reloadWhenIdle, 5000);
+          else location.reload();
+        }
+        sw.addEventListener('controllerchange', function () {
+          if (controlled) reloadWhenIdle();
+          else controlled = true;
+        });
+      })();
+    </script>
+    <!-- update:end -->
+    %sveltekit.head%
+  </head>
+  <body>
+    <div style="display: contents">%sveltekit.body%</div>
+  </body>
+</html>

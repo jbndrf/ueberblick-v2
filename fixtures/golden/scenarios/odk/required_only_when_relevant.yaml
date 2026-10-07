@@ -1,0 +1,73 @@
+scenario: required_only_when_relevant
+title: "A required field is only required while it is relevant"
+foundations: [F3, F5]
+capabilities: [odk_required, odk_relevant]
+given:
+  project: projects/stadtwerke-meldungen.yaml
+  participants:
+    mia: { roles: [melder] }
+    sabine: { roles: [sachbearbeiter] }
+  now: "2026-05-01T08:00:00Z"
+when:
+  - id: s1                                # hoch makes dringlich_begruendung relevant, and it is required
+    kind: run
+    task: melden
+    actor: sabine
+    creates: $new:m1
+    input:
+      geometrie: { type: Point, coordinates: [7.10, 50.73] }
+      kategorie: strasse
+      beschreibung: { de: Schlagloch, en: Pothole }
+      prioritaet: hoch
+  - id: s2
+    kind: run
+    task: melden
+    actor: sabine
+    creates: $new:m2
+    input:
+      geometrie: { type: Point, coordinates: [7.10, 50.73] }
+      kategorie: strasse
+      beschreibung: { de: Schlagloch, en: Pothole }
+      prioritaet: hoch
+      dringlich_begruendung: Schule in der Nähe
+  - id: s3                                # normal: not relevant, so not required; a supplied value is dropped
+    kind: run
+    task: melden
+    actor: sabine
+    creates: $new:m3
+    input:
+      geometrie: { type: Point, coordinates: [7.10, 50.73] }
+      kategorie: strasse
+      beschreibung: { de: Schlagloch }
+      prioritaet: normal
+      dringlich_begruendung: wird verworfen
+  - id: s4                                # the reporter role has no prioritaet field (relevant: sachbearbeiter only)
+    kind: run
+    task: melden
+    actor: mia
+    creates: $new:m4
+    input:
+      geometrie: { type: Point, coordinates: [7.10, 50.73] }
+      kategorie: beleuchtung
+      beschreibung: { de: Laterne defekt }
+      prioritaet: hoch
+  - id: s5                                # a reporter may write beschreibung of the report they create
+    kind: run
+    task: melden
+    actor: mia
+    creates: $new:m5
+    input:
+      geometrie: { type: Point, coordinates: [7.11, 50.74] }
+      kategorie: strasse
+      beschreibung: { de: Gehweg aufgebrochen }
+then:
+  steps:
+    s1: { outcome: refused, refusal: required_missing, field: dringlich_begruendung, no_trace: true }
+    s2: { outcome: accepted }
+    s3: { outcome: accepted, dropped_fields: [dringlich_begruendung] }
+    s4: { outcome: accepted, dropped_fields: [prioritaet] }
+    s5: { outcome: accepted }
+  features:
+    m3: { properties: { prioritaet: normal }, absent: [dringlich_begruendung] }
+    m4: { properties: { prioritaet: normal, melder: mia } }
+    m5: { properties: { melder: mia } }

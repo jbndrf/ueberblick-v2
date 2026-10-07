@@ -1,0 +1,54 @@
+scenario: flaeche_anlegen_enables_kontrolle
+title: "An area created by the administration binds the trees inside it, so Regelkontrolle becomes plannable"
+foundations: [F3, F4, F9]
+capabilities: [bind, derived_relation, permission_create]
+given:
+  project: projects/musterstadt-plain.yaml
+  participants:
+    anna: { roles: [kontrolle] }
+    vera: { roles: [verwaltung] }
+  now: "2026-05-01T08:00:00Z"
+when:
+  - id: s1                                # an inspector may not create areas
+    kind: run
+    task: flaeche_anlegen
+    actor: anna
+    creates: $new:f0
+    input: { name: Unbefugt, geometrie: { type: Polygon, coordinates: [[[7.1, 50.73], [7.11, 50.73], [7.11, 50.74], [7.1, 50.74], [7.1, 50.73]]] } }
+  - id: s2
+    kind: run
+    task: flaeche_anlegen
+    actor: vera
+    creates: $new:park
+    input: { name: Spielplatz Nord, geometrie: { type: Polygon, coordinates: [[[7.1, 50.73], [7.11, 50.73], [7.11, 50.74], [7.1, 50.74], [7.1, 50.73]]] } }
+  - id: s3                                # a tree inside the new area
+    kind: run
+    task: erfassen
+    actor: anna
+    creates: $new:t1
+    input: { geometrie: { type: Point, coordinates: [7.102, 50.732] }, vitalitaet: "v1" }
+  - id: s4                                # Regelkontrolle: bind area = self.flaeche now resolves
+    kind: run
+    task: kontrolle
+    actor: anna
+    feature: $new:t1
+    input: { vitalitaet: "v2", befund: Regelkontrolle }
+then:
+  steps:
+    s1: { outcome: refused, refusal: not_permitted, no_trace: true }
+    s2:
+      outcome: accepted
+      observations:
+        - { feature: $new:park, property: $type, result: flaeche }
+        - { feature: $new:park, property: name, result: Spielplatz Nord }
+    s3: { outcome: accepted }
+    s4:
+      outcome: accepted
+      observations:
+        - { feature: $new:park, property: letzte_kontrolle, result: "2026-05-01" }
+  features:
+    park: { type: flaeche, properties: { name: Spielplatz Nord, letzte_kontrolle: "2026-05-01" } }
+    t1: { type: baum, properties: { stage: kontrolliert } }
+    f0: { exists: false }
+  edges:
+    - { from: t1, relation: flaeche, to: park, derived: true }

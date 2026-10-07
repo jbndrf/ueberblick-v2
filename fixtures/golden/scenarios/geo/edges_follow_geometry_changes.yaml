@@ -1,0 +1,49 @@
+scenario: edges_follow_geometry_changes
+title: "Derived edges are recomputed when the geometry of either side changes, in the same transaction"
+foundations: [F3, F4, F9, F11]
+capabilities: [derived_relation, point_in_polygon, polygon_hole]
+given:
+  project: projects/musterstadt-plain.yaml
+  include: [seeds/musterstadt-geo.yaml]
+  now: "2026-05-01T08:00:00Z"
+  features:
+    park2:
+      type: flaeche
+      properties:
+        name: Bolzplatz
+        geometrie: { type: Polygon, coordinates: [[[7.200, 50.740], [7.210, 50.740], [7.210, 50.760], [7.200, 50.760], [7.200, 50.740]]] }
+when:
+  - id: s1                                # move t_in from the park into the second area
+    kind: run
+    task: verschieben
+    actor: vera
+    feature: t_in
+    input: { geometrie: { type: Point, coordinates: [7.205, 50.750] } }
+  - id: s2                                # the park is edited so that it becomes a smaller polygon: t_boundary is no longer on its edge
+    kind: run
+    task: flaeche_bearbeiten
+    actor: vera
+    feature: park
+    input: { geometrie: { type: Polygon, coordinates: [[[7.102, 50.730], [7.110, 50.730], [7.110, 50.740], [7.102, 50.740], [7.102, 50.730]]] } }
+  - id: s3                                # park2 is moved away, so t_in loses its area
+    kind: run
+    task: flaeche_bearbeiten
+    actor: vera
+    feature: park2
+    input: { geometrie: { type: Polygon, coordinates: [[[7.300, 50.740], [7.310, 50.740], [7.310, 50.760], [7.300, 50.760], [7.300, 50.740]]] } }
+then:
+  steps:
+    s1:
+      outcome: accepted
+      edges_added: [{ from: t_in, relation: flaeche, to: park2 }, { from: t_in, relation: randlage, to: park2 }]
+      edges_removed: [{ from: t_in, relation: flaeche, to: park }, { from: t_in, relation: randlage, to: park }]
+    s2:
+      outcome: accepted
+      edges_removed: [{ from: t_boundary, relation: randlage, to: park }]
+    s3:
+      outcome: accepted
+      edges_removed: [{ from: t_in, relation: flaeche, to: park2 }, { from: t_in, relation: randlage, to: park2 }]
+  edges_absent:
+    - { from: t_in, relation: flaeche, to: park }
+    - { from: t_in, relation: flaeche, to: park2 }
+  edge_updated_seq_bumped: true         # every changed edge gets the seq of the run, so devices receive the delta

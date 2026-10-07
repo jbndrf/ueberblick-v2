@@ -1,0 +1,18 @@
+{
+  "name": "@ueberblick/tool-chat",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "sideEffects": false,
+  "description": "Projekt-Chat tool: the project's chat over the tool data stream (ctx.data), v3's panel with grouped messages, mention chips and a composer.",
+  "scripts": {
+    "i18n": "paraglide-js compile --project ./project.inlang --outdir ./src/paraglide"
+  },
+  "dependencies": {
+    "@ueberblick/core": "*",
+    "@ueberblick/ui": "*"
+  }
+}

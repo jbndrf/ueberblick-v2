@@ -1,0 +1,25 @@
+scenario: no_abschliessen_at_end_stage
+title: "Einsatz abschließen is offered while the Einsatz is under way and not once it reached its end stage Fertig"
+foundations: [F3, F6]
+capabilities: [permission_write]
+given:
+  project: projects/stadtwerke-meldungen.yaml
+  include: [seeds/stadtwerke.yaml]
+  now: "2026-05-01T08:00:00Z"
+  features:
+    e_offen:
+      type: einsatz
+      properties: { titel: Rohr, zustaendig: hans, status: in_arbeit }
+    e_fertig:
+      type: einsatz
+      properties: { titel: Schacht, zustaendig: hans, status: fertig }
+when:
+  - { id: s1, kind: run, task: einsatz_abschliessen, actor: hans, feature: e_fertig, input: {} }
+  - { id: s2, kind: run, task: einsatz_abschliessen, actor: hans, feature: e_offen, input: {} }
+then:
+  steps:
+    s1: { outcome: refused, refusal: not_available, no_trace: true }
+    s2: { outcome: accepted }
+  features:
+    e_fertig: { properties: { status: fertig } }
+    e_offen: { properties: { status: fertig } }

@@ -1,0 +1,82 @@
+{
+  "suites": [
+    {
+      "title": "flow.spec.ts",
+      "file": "flow.spec.ts",
+      "specs": [
+        {
+          "title": "participant opens a task",
+          "file": "flow.spec.ts",
+          "line": 12,
+          "tests": [
+            {
+              "status": "unexpected",
+              "results": [
+                {
+                  "status": "failed",
+                  "duration": 1200,
+                  "error": {
+                    "message": "Error: expect(locator).toHaveText(expected)\n\nExpected: \"Saved\"\nReceived: \"\"",
+                    "stack": "at flow.spec.ts:20"
+                  },
+                  "steps": [
+                    { "title": "click button Save" },
+                    { "title": "expect toHaveText", "error": { "message": "toHaveText failed" } }
+                  ],
+                  "stdout": [],
+                  "stderr": [{ "text": "console.error: save handler threw\n" }],
+                  "attachments": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "map shows markers",
+          "file": "flow.spec.ts",
+          "line": 40,
+          "tests": [
+            {
+              "status": "unexpected",
+              "results": [
+                {
+                  "status": "timedOut",
+                  "duration": 30000,
+                  "error": { "message": "Test timeout of 30000ms exceeded." },
+                  "steps": [{ "title": "wait for selector .marker", "error": { "message": "timeout" } }],
+                  "attachments": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "sync after reload",
+          "file": "flow.spec.ts",
+          "line": 70,
+          "tests": [
+            {
+              "status": "unexpected",
+              "results": [
+                {
+                  "status": "failed",
+                  "duration": 800,
+                  "error": { "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/" },
+                  "steps": [{ "title": "page.goto", "error": { "message": "net::ERR_CONNECTION_REFUSED" } }],
+                  "attachments": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "healthy",
+          "file": "flow.spec.ts",
+          "line": 99,
+          "tests": [{ "status": "expected", "results": [{ "status": "passed", "duration": 10, "attachments": [] }] }]
+        }
+      ],
+      "suites": []
+    }
+  ]
+}

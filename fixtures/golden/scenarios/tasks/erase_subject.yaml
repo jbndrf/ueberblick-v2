@@ -1,0 +1,40 @@
+scenario: erase_subject
+title: "An admin erases a participant: the personal values they submitted are blanked, everyone else's stay, other properties stay"
+foundations: [F3, F4]
+capabilities: [erasure]
+given:
+  project: projects/stadtwerke-meldungen.yaml
+  include: [seeds/stadtwerke.yaml]
+  now: "2026-05-01T08:00:00Z"
+when:
+  - id: s1
+    kind: run
+    task: melden
+    actor: mia
+    creates: $new:m1
+    input:
+      geometrie: { type: Point, coordinates: [7.10, 50.75] }
+      kategorie: strasse
+      beschreibung: { de: Schlagloch }
+  - id: s2
+    kind: run
+    task: melden
+    actor: sabine
+    creates: $new:m2
+    input:
+      geometrie: { type: Point, coordinates: [7.11, 50.76] }
+      kategorie: strasse
+      beschreibung: { de: Baum umgestuerzt }
+  - id: s3
+    kind: run
+    task: erase_subject
+    actor: { kind: admin, id: root }
+    input: { subject: mia }
+then:
+  steps:
+    s1: { outcome: accepted }
+    s2: { outcome: accepted }
+    s3: { outcome: accepted }
+  features:
+    m1: { properties: { melder: null, kategorie: strasse } }
+    m2: { properties: { melder: sabine, kategorie: strasse } }

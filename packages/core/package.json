@@ -1,0 +1,49 @@
+{
+  "name": "@ueberblick/core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": [
+    "./src/geo/engine-jsts.ts",
+    "./src/zod.ts"
+  ],
+  "exports": {
+    ".": "./src/index.ts",
+    "./zod": "./src/zod.ts",
+    "./model": "./src/model.ts",
+    "./prefs": "./src/prefs/index.ts",
+    "./mentions": "./src/mentions/index.ts",
+    "./ports": "./src/ports.ts",
+    "./registry": "./src/registry/index.ts",
+    "./registry/filter": "./src/registry/filter.ts",
+    "./registry/tools": "./src/registry/tools.ts",
+    "./registry/admin": "./src/registry/admin.ts",
+    "./registry/compile": "./src/registry/compile.ts",
+    "./registry/expr-errors": "./src/registry/expr-errors.ts",
+    "./hydrate": "./src/hydrate/index.ts",
+    "./expr": "./src/expr/index.ts",
+    "./expr/compile": "./src/expr/compile.ts",
+    "./rules/timing": "./src/rules/timing/index.ts",
+    "./geo": "./src/geo/index.ts",
+    "./locale": "./src/locale/index.ts",
+    "./geo/bbox": "./src/geo/bbox.ts",
+    "./schema": "./src/schema/index.ts",
+    "./marker": "./src/marker/index.ts",
+    "./compile": "./src/schema/compile/index.ts",
+    "./plan": "./src/plan/index.ts",
+    "./perms": "./src/perms/index.ts",
+    "./filters": "./src/filters/index.ts",
+    "./template": "./src/template/index.ts",
+    "./sync": "./src/sync/index.ts",
+    "./fold": "./src/fold/index.ts",
+    "./form": "./src/form/index.ts",
+    "./memory": "./src/memory/index.ts",
+    "./testing": "./src/testing/index.ts"
+  },
+  "description": "Pure domain core: schema, template, expr, geo, perms, plan, fold, sync, registry. No I/O (CLAUDE.md R2).",
+  "dependencies": {
+    "jsts": "^2.12.1",
+    "polylabel": "^2.1.0",
+    "proj4": "^2.22.0"
+  }
+}

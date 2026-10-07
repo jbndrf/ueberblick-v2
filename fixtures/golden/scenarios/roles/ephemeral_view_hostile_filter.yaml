@@ -1,0 +1,36 @@
+scenario: ephemeral_view_hostile_filter
+title: "H4. Untrusted runtime filters cannot probe hidden properties, call unknown functions or crash evaluation"
+foundations: [F2, F5, F6, F10]
+capabilities: [h4_ephemeral_view, visible_when]
+given:
+  project: projects/musterstadt-plain.yaml
+  include: [seeds/musterstadt-geo.yaml]
+  now: "2026-05-01T08:00:00Z"
+when:
+  - id: s1                                # bauhof may not see intern_notiz; a filter on it would leak the value bit by bit
+    kind: view
+    actor: bernd
+    ephemeral: { source: { type: baum, filter: "self.intern_notiz.startsWith('Wurzel')" } }
+  - id: s2
+    kind: view
+    actor: bernd
+    ephemeral: { source: { type: baum, filter: "self.gibt_es_nicht == 1" } }
+  - id: s3                                # no I/O and no clock: only registered functions exist
+    kind: view
+    actor: bernd
+    ephemeral: { source: { type: baum, filter: "http_get('https://example.org') == 'x'" } }
+  - id: s4                                # evaluation is total: division by zero yields null, which counts as false
+    kind: view
+    actor: bernd
+    ephemeral: { source: { type: baum, filter: "size(self.befund) / 0 > 1" } }
+  - id: s5                                # the same filter is fine for a role that may see the property
+    kind: view
+    actor: vera
+    ephemeral: { source: { type: baum, filter: "self.intern_notiz.startsWith('Wurzel')" } }
+then:
+  steps:
+    s1: { outcome: refused, refusal: property_not_visible, property: intern_notiz, no_ids_returned: true }
+    s2: { outcome: refused, refusal: unknown_property, property: gibt_es_nicht }
+    s3: { outcome: refused, refusal: invalid_input, detail: unknown_function, function: http_get }
+    s4: { outcome: accepted, ids: [], evaluation_errors_reported: 4 }
+    s5: { ids: [t_in] }

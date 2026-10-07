@@ -1,0 +1,26 @@
+# Paths that stay in the dev repo and never reach the public GitHub repo (scripts/publish/export.mjs).
+# One path per line, relative to the repo root; a directory drops everything below it.
+
+# agent fleet: instructions, work packages, reviews, metrics, orchestration
+.claude
+AGENTS.md
+CLAUDE.md
+work
+reviews
+metrics
+spikes
+scripts/orchestrate
+scripts/docsync
+scripts/logwatch
+scripts/wp-status.mjs
+scripts/hook-post-edit.mjs
+scripts/hook-pre-bash.mjs
+scripts/hook-pre-bash.d.mts
+scripts/hook-pre-bash.spec.mjs
+scripts/metrics/parity.spec.ts
+scripts/ops/wp-ids.spec.ts
+
+# v3 source and internal notes
+reference
+docs/history
+docs/research

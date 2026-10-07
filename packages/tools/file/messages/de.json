@@ -1,0 +1,9 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "file_choose": "Dateien",
+  "file_done": "Hinzugefügt",
+  "file_failed": "Die Datei konnte nicht gespeichert werden. Versuchen Sie eine andere Datei.",
+  "file_limit": "Dateilimit erreicht: Entfernen Sie eine, um eine weitere hinzuzufügen.",
+  "file_not_accepted": "Dieser Dateityp ist hier nicht erlaubt.",
+  "file_processing": "Dateien werden gespeichert …"
+}

@@ -1,0 +1,34 @@
+scenario: relevant_drops_non_relevant_values
+title: "Values of non-relevant fields are not submitted and never stored"
+foundations: [F3, F4]
+capabilities: [odk_relevant, non_relevant_not_submitted]
+given:
+  project: projects/musterstadt-plain.yaml
+  include: [seeds/musterstadt-geo.yaml]
+  now: "2026-05-01T08:00:00Z"
+when:
+  - id: s1                                # foto is relevant only when vitalitaet >= 3; here it is 2, so the photo is dropped
+    kind: run
+    task: kontrolle
+    actor: anna
+    feature: t_in
+    input: { vitalitaet: "v2", befund: Alles gut, foto: [{ sha256: "bb22", name: baum.jpg, mime: image/jpeg }] }
+  - id: s2                                # relevant flips with the form value: the same photo is kept at 3
+    kind: run
+    task: kontrolle
+    actor: anna
+    feature: t_in
+    input: { vitalitaet: "v3", befund: Verschlechtert, foto: [{ sha256: "bb22", name: baum.jpg, mime: image/jpeg }] }
+then:
+  steps:
+    s1:
+      outcome: accepted
+      observations_absent: [{ feature: t_in, property: foto }]
+      dropped_fields: [foto]
+    s2:
+      outcome: accepted
+      observations:
+        - { feature: t_in, property: foto, result: [{ sha256: "bb22", name: baum.jpg, mime: image/jpeg }] }
+  features:
+    t_in: { properties: { vitalitaet: "v3" } }
+  blobs_referenced: [{ sha256: "bb22", by_runs: 1 }]     # only the accepted use counts

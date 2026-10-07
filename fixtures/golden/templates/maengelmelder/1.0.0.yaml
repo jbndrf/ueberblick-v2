@@ -1,0 +1,229 @@
+schema: ueberblick/1
+template: { key: maengelmelder, version: 1.0.0 }
+
+inputs:
+  eskalation_tage: { type: integer, default: 7, label: { de: Eskalation nach (Tagen), en: Escalate after (days) }, description: { de: "Nach so vielen Tagen ohne Status \"erledigt\" wird eine Meldung automatisch als eskaliert markiert und auf Priorität \"hoch\" gesetzt (Regel eskalation_nach_frist).", en: "After this many days without status \"erledigt\" a report is automatically marked as escalated and set to priority \"hoch\" (rule eskalation_nach_frist)." } }
+
+map:
+  start: { center: [7.11, 50.755], zoom: 12 }     # Bonn, where the sample reports sit (owner answer M6 a)
+  layers: {}
+
+roles:
+  melder:
+    label: { de: Melder, en: Reporter, uk: Заявник }
+    app: { home: meine_meldungen, views: { meine_meldungen: {} }, tools: { photo: {}, search: {} }, shortcuts: { melden: {} } }
+  sachbearbeiter:
+    label: { de: Sachbearbeitung, en: Case handler, uk: Обробник }
+    app: { home: lagekarte, views: { lagekarte: {}, offene_meldungen: {}, einsaetze: {} }, tools: { search: {}, measure: {} }, shortcuts: { bewerten: {}, erledigen: {}, einsatz_anlegen: {} } }
+  handwerker:
+    label: { de: Handwerker, en: Technician, uk: Майстер }
+    app: { home: meine_einsaetze, views: { meine_einsaetze: {} }, tools: { photo: {} }, shortcuts: { einsatz_beginnen: {}, einsatz_abschliessen: {} } }
+
+types:
+  bezirk:
+    label: { de: Bezirk, en: District, uk: Район }
+    geometry: geometrie
+    permissions: { see: $all, create: [sachbearbeiter], write: [sachbearbeiter] }
+    properties:
+      name: { type: text, required: true, label: { de: Name, en: Name } }
+      geometrie: { type: geometry, geometry_type: polygon, required: true, label: { de: Lage, en: Location } }
+      leitung: { type: participant, label: { de: Leitung, en: Lead } }
+  meldung:
+    label: { de: Meldung, en: Report, uk: Повідомлення }
+    geometry: geometrie
+    permissions:
+      see: { melder: [melder, sachbearbeiter] }
+      visible_when: "self.melder == actor.id || !('melder' in actor.roles)"     # row level: reporters see only their own, and so they may read who reported (WP-719)
+      create: [melder, sachbearbeiter]
+      write:
+        geometrie: [melder, sachbearbeiter]
+        kategorie: [melder, sachbearbeiter]
+        foto: [melder, sachbearbeiter]
+        dringlich_begruendung: [sachbearbeiter]
+        beschreibung: [melder, sachbearbeiter]
+        prioritaet: [sachbearbeiter]
+        status: [sachbearbeiter, handwerker]
+        zustaendig: [sachbearbeiter]
+        eskaliert: []
+    process: { property: status, start: offen, end: [erledigt] }
+    marker: { color: "#4a5568", icon: { key: map-pin } }
+    classify:                                   # not the stage: the category picks the icon (v3 filterBy: field)
+      property: kategorie
+      values:
+        strasse: { color: "#4a5568", icon: { key: map-pin } }
+        beleuchtung: { color: "#d69e2e", icon: { key: circle-alert } }
+        muell: { color: "#2f855a", icon: { key: trash-2 } }
+        spielplatz: { color: "#d53f8c", icon: { $ref: icons/spielplatz.svg, size: 36 } }
+    properties:
+      geometrie: { type: geometry, geometry_type: point, required: true, label: { de: Geometrie, en: Geometry } }
+      kategorie:
+        type: select
+        options: { strasse: { de: Straße, en: Street }, beleuchtung: { de: Beleuchtung, en: Lighting }, muell: { de: Müll, en: Waste }, spielplatz: { de: Spielplatz, en: Playground } }
+        required: true
+        label: { de: Kategorie, en: Category, uk: Категорія }
+      beschreibung: { type: localized_text, label: { de: Beschreibung, en: Description, uk: Опис } }
+      foto: { type: file, accept: [image/*], label: { de: Foto, en: Photo } }
+      melder: { type: participant, personal: { subject: actor }, label: { de: Melder, en: Reporter } }
+      status:
+        type: select
+        options: { offen: { de: Offen, en: Open }, bewertet: { de: Bewertet, en: Assessed }, zugewiesen: { de: Zugewiesen, en: Assigned }, erledigt: { de: Erledigt, en: Completed } }
+        label: { de: Status, en: Status }
+      prioritaet: { type: select, options: { niedrig: { de: Niedrig, en: Low }, normal: { de: Normal, en: Normal }, hoch: { de: Hoch, en: High } }, default: normal, label: { de: Priorität, en: Priority } }
+      dringlich_begruendung: { type: text, label: { de: Begründung der Dringlichkeit, en: Reason for urgency } }
+      zustaendig: { type: participant, index: true, select: { all: [sachbearbeiter] }, label: { de: Zuständig, en: Assigned to } }
+      benachrichtigt: { type: boolean, default: false, label: { de: Benachrichtigt, en: Notified } }
+      gemeldet_am: { type: date, label: { de: Gemeldet am, en: Reported on } }
+      eskaliert: { type: boolean, default: false, label: { de: Eskaliert, en: Escalated } }
+    relations:
+      bezirk: { to: bezirk, derive: "within(self.geometrie, other.geometrie)", cardinality: one }
+  loeschung:
+    label: { de: Löschung, en: Erasure }
+    permissions: { see: [sachbearbeiter], create: [sachbearbeiter], write: [sachbearbeiter] }
+    properties:
+      subject: { type: participant, required: true, label: { de: Person, en: Person } }
+  einsatz:
+    label: { de: Einsatz, en: Work order, uk: Завдання }
+    permissions: { see: $all, visible_when: "self.zustaendig == actor.id || 'sachbearbeiter' in actor.roles", create: [sachbearbeiter], write: { titel: [sachbearbeiter], zustaendig: [sachbearbeiter], meldung: [sachbearbeiter], status: [handwerker, sachbearbeiter] } }
+    process: { property: status, start: neu, end: [fertig] }
+    properties:
+      titel: { type: text, required: true, label: { de: Titel, en: Title } }
+      zustaendig: { type: participant, required: true, index: true, select: { all: [sachbearbeiter] }, label: { de: Zuständig, en: Assigned to } }
+      status: { type: select, options: { neu: { de: Neu, en: New }, in_arbeit: { de: In Arbeit, en: In progress }, fertig: { de: Fertig, en: Done } }, label: { de: Status, en: Status } }
+      meldung: { type: reference, to: meldung, label: { de: Meldung, en: Report } }
+
+tasks:
+  melden:
+    label: { de: Mangel melden, en: Report a defect, uk: Повідомити про дефект }
+    on: $map
+    who: [melder, sachbearbeiter]
+    creates: meldung
+    form:
+      geometrie: { tool: draw, required: true }
+      kategorie: { required: true }
+      beschreibung: { required: true }
+      foto: { tool: photo, relevant: "form.kategorie != 'muell'" }
+      prioritaet: { relevant: "'sachbearbeiter' in actor.roles" }
+      dringlich_begruendung:
+        relevant: "form.prioritaet == 'hoch'"
+        required: true
+    then:
+      - set: { melder: actor.id }
+      - set: { gemeldet_am: "today()" }
+  beschreibung_uebersetzen:
+    label: { de: Beschreibung übersetzen, en: Translate description }
+    on: meldung
+    who: [sachbearbeiter]
+    form:
+      beschreibung: { required: true }
+  bewerten:
+    label: { de: Bewerten, en: Assess }
+    on: meldung
+    who: [sachbearbeiter]
+    when: "self.status == 'offen'"
+    form:
+      prioritaet: { required: true }
+    then:
+      - set: { status: "'bewertet'", prioritaet: "form.prioritaet != null ? form.prioritaet : 'hoch'" }
+    auto:
+      eingang_bewerten: # chain step 1: a new report is assessed by a system run
+        after: melden
+        when: "self.prioritaet == 'hoch'"
+  zuweisen:
+    label: { de: Zuweisen, en: Assign }
+    on: meldung
+    who: [sachbearbeiter]
+    form:
+      zustaendig: { required: true }
+    then:
+      - set: { status: "'zugewiesen'", zustaendig: "form.zustaendig != null ? form.zustaendig : self.bezirk.leitung" }
+    auto:
+      bewertet_zuweisen: # chain step 2
+        after: bewerten
+        when: "self.bezirk.leitung != null"
+  benachrichtigen:
+    label: { de: Benachrichtigen, en: Notify }
+    on: meldung
+    then:
+      - set: { benachrichtigt: true }
+    auto:
+      zugewiesen_benachrichtigen: # chain step 3
+        after: zuweisen
+  eskalieren:
+    label: { de: Eskalieren, en: Escalate }
+    on: meldung
+    then:
+      - set: { eskaliert: true }
+      - set: { prioritaet: "'hoch'" }
+    auto:
+      eskalation_nach_frist:
+        elapsed: { from: self.gemeldet_am, after: "days(inputs.eskalation_tage)" }
+        when: "self.status != 'erledigt' && self.eskaliert == false"
+  einsatz_anlegen:
+    label: { de: Einsatz anlegen, en: Create work order }
+    on: $none
+    who: [sachbearbeiter, admin]
+    creates: einsatz
+    form:
+      titel: { required: true }
+      zustaendig: { required: true }
+  erase_subject:
+    label: { de: Person löschen, en: Erase a person }
+    on: $none
+    who: [sachbearbeiter, admin]
+    creates: loeschung
+    form:
+      subject: { required: true }
+    then:
+      - redact: { subject: actor, of: form.subject }
+  einsatz_abschliessen:
+    label: { de: Einsatz abschließen, en: Complete work order }
+    on: einsatz
+    who: [handwerker]
+    when: "self.zustaendig == actor.id && self.status != 'fertig'"
+    then:
+      - set: { status: "'fertig'" }
+  erledigen:
+    label: { de: Erledigen, en: Close }
+    on: meldung
+    who: [sachbearbeiter]
+    when: "self.status == 'zugewiesen'"
+    then:
+      - set: { status: "'erledigt'" }
+  einsatz_beginnen:
+    label: { de: Einsatz beginnen, en: Start work order }
+    on: einsatz
+    who: [sachbearbeiter, handwerker]
+    when: "(self.zustaendig == actor.id || 'sachbearbeiter' in actor.roles) && self.status == 'neu'"
+    then:
+      - set: { status: "'in_arbeit'" }
+
+views:
+  melden:
+    label: { de: Melden, en: Report }
+    source: { type: meldung, filter: "false" }
+  meine_meldungen:
+    label: { de: Meine Meldungen, en: My reports }
+    source: { type: meldung, filter: "self.melder == actor.id" }
+  lagekarte:
+    label: { de: Lagekarte, en: Situation map }
+    source: { type: meldung }
+    layers:
+      meldungen: { source: { type: meldung, filter: "self.status != 'erledigt'" }, renderer: maplibre-2d }
+  offene_meldungen:
+    label: { de: Offene Meldungen, en: Open reports }
+    source: { type: meldung, filter: "self.status != 'erledigt'" }
+    sort: [prioritaet]
+  einsaetze:
+    label: { de: Einsätze, en: Work orders }
+    source: { type: einsatz }
+  meine_einsaetze:
+    label: { de: Meine Einsätze, en: My work orders }
+    source: { type: einsatz, filter: "self.zustaendig == actor.id && self.status != 'fertig'" }
+
+tools:
+  photo: {}
+  search: { sources: [einsatz.titel] }
+  measure: {}
+  draw: {}
+
+migrations: {}

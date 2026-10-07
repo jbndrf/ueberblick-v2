@@ -1,0 +1,76 @@
+{
+  "projects": [
+    {
+      "key": "musterstadt_baeume",
+      "name": "Baumkataster Musterstadt",
+      "fixture": "musterstadt-baeume",
+      "title": "Musterstadt: Baumkataster (tree cadastre)",
+      "participants": [
+        {
+          "id": "participant-1",
+          "name": "Anna",
+          "roles": ["kontrolle"]
+        },
+        {
+          "id": "bernd",
+          "name": "Bernd",
+          "roles": ["bauhof"]
+        },
+        {
+          "id": "vera",
+          "name": "Vera",
+          "roles": ["verwaltung"]
+        }
+      ],
+      "try": "Anna (kontrolle): open \"Liste\" and tap a tree, or tap one on the map (its sheet shows \"Daten\" and \"Aktivität\"), tap \"Regelkontrolle\" under \"Aufgaben\", set the vitality to 3 or 4, enter a \"Befund\" that differs from the old one and tap \"Absenden\": a rule creates a \"Maßnahme\". She can also add a tree: \"Neu\", then \"Baum erfassen\" (the field \"Baumart\" offers six species), or change a tree with \"Baum bearbeiten\". Vera (verwaltung) sees all 150 trees and the areas and can assign one (\"Zuweisen\"). Bernd (bauhof): a \"Maßnahme\" has no place on the map, so he opens one from \"Zuletzt\" (tap \"Neu\" twice) and taps \"Maßnahme erledigen\" (5 are open at the start, and Anna's check adds one)."
+    },
+    {
+      "key": "stadtwerke_meldungen",
+      "name": "Mängelmelder Stadtwerke",
+      "fixture": "stadtwerke-meldungen",
+      "title": "Stadtwerke: Mängelmelder (defect reports)",
+      "participants": [
+        {
+          "id": "mia",
+          "name": "Mia",
+          "roles": ["melder"]
+        },
+        {
+          "id": "sven",
+          "name": "Sven",
+          "roles": ["sachbearbeiter"]
+        },
+        {
+          "id": "hanna",
+          "name": "Hanna",
+          "roles": ["handwerker"]
+        }
+      ],
+      "try": "Sven (sachbearbeiter): the map shows about 75 open reports; tap one, then under \"Aufgaben\" choose \"Bewerten\", then \"Zuweisen\". Mia (melder) can report a new one: \"Neu\", then \"Mangel melden\", move the pin to the spot, confirm, choose a category, describe it and tap \"Absenden\"; her 10 earlier reports show on her map and under \"Zuletzt\" (tap \"Neu\" twice). Hanna (handwerker) has 4 work orders."
+    },
+    {
+      "key": "ordnungsamt_veranstaltungen",
+      "name": "Veranstaltungen Ordnungsamt",
+      "fixture": "ordnungsamt-veranstaltungen",
+      "title": "Ordnungsamt: Veranstaltungen (event approvals)",
+      "participants": [
+        {
+          "id": "toni",
+          "name": "Toni",
+          "roles": ["antragsteller"]
+        },
+        {
+          "id": "olga",
+          "name": "Olga",
+          "roles": ["sachbearbeiter"]
+        },
+        {
+          "id": "felix",
+          "name": "Felix",
+          "roles": ["brandschutz"]
+        }
+      ],
+      "try": "Olga (sachbearbeiter) sees all 28 applications and 12 buildings: open an application with the status \"Eingereicht\" and start the review (\"Prüfung beginnen\"), then reject it (\"Ablehnen\"); \"Genehmigen\" appears only when no condition is open and no other event collides. Olga and Felix (brandschutz) impose a condition on an application \"In Prüfung\": open its sheet and tap \"Auflage anlegen\" in the list \"Auflage\". Toni (antragsteller) sees his own 4 applications and can apply: \"Neu\", then \"Veranstaltung beantragen\", draw the site on the map (\"Fertig\"), enter a title and a date in the future and tap \"Absenden\"."
+    }
+  ]
+}

@@ -1,0 +1,160 @@
+# Positive fixtures, one or more per decision (A-004 items 1-11, A-005 items 1 and 4). Each: name, file.
+- name: 'A-004 1 per-property see'
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    types:
+      baum:
+        label: Baum
+        permissions: { see: { intern: [kontrolle, verwaltung] }, write: $all }
+        properties: { intern: { type: text } }
+- name: 'A-004 2 localized_text property type'
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    types: { baum: { label: Baum, properties: { beschreibung: { type: localized_text } } } }
+- name: 'A-004 3 relation cardinality'
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    types:
+      baum:
+        label: Baum
+        properties: { g: { type: geometry } }
+        relations:
+          flaeche: { to: flaeche, derive: 'within(self.g, other.g)', cardinality: one }
+          rand: { to: flaeche, derive: 'intersects(self.g, other.g)' }
+      flaeche: { label: Fläche, properties: { g: { type: geometry } } }
+- name: 'A-004 4 inverse_of'
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    types:
+      veranstaltung:
+        label: Veranstaltung
+        properties: {}
+        relations: { auflagen: { to: auflage, inverse_of: auflage.veranstaltung, cardinality: many } }
+      auflage: { label: Auflage, properties: { veranstaltung: { type: reference, to: veranstaltung } } }
+- name: 'A-004 5 creates on $map and on $none'
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    tasks:
+      melden: { label: Melden, on: $map, creates: meldung }
+      anlegen: { label: Anlegen, on: $none, creates: meldung }
+      pruefen: { label: Prüfen, on: meldung }
+- name: 'A-004 6 automatic action with its own when'
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    tasks:
+      massnahme:
+        label: M
+        on: baum
+        auto:
+          r: { after: kontrolle, when: 'self.anzahl > 1' }
+- name: 'A-004 7 automatic action timings'
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    tasks:
+      t:
+        label: T
+        on: baum
+        auto:
+          a: { elapsed: { from: self.faellig_am } }
+          b: { elapsed: { from: self.datum, after: 'days(7)', offset: '-days(14)' } }
+          c: { schedule: '0 3 * * 1', idle: 'days(7)' }
+          d: { after: kontrolle }
+          e: { change: 'baum.stage' }
+          f: { when: "self.stage == 'erledigt'" }
+- name: 'A-004 8 permissions visible_when'
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    types:
+      meldung:
+        label: Meldung
+        properties: { melder: { type: participant } }
+        permissions: { see: $all, visible_when: "self.melder == actor.id || !('melder' in actor.roles)" }
+- name: 'A-004 9 then.set string is an expression, other scalars literals'
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    tasks:
+      t:
+        label: T
+        on: baum
+        then:
+          - set:
+              {
+                stage: "'massnahme'",
+                prioritaet: 3,
+                erledigt: true,
+                notiz: null,
+                faellig: 'today() + months(1)',
+              }
+- name: 'A-004 10 primary geometry is a property'
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    types:
+      baum:
+        label: Baum
+        geometry: standort
+        properties:
+          standort: { type: geometry, geometry_type: point }
+          krone: { type: geometry, geometry_type: polygon }
+      lookup: { label: Lookup, properties: { name: { type: text } } }
+- name: 'A-004 11 option keys are letter first'
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    types:
+      baum:
+        label: Baum
+        properties: { v: { type: select, options: { v0: '0', v1: '1', stufe_2: '2' } } }
+- name: 'A-005 1 role app keyed maps with per-role settings'
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    roles:
+      r:
+        label: R
+        app:
+          views: { karte: {}, liste: { limit: 50 } }
+          tools: { photo: {} }
+          shortcuts: { melden: {} }
+- name: 'A-005 4 sigil keywords'
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    types: { baum: { label: Baum, properties: {}, permissions: { see: $all, create: $all, write: $all } } }
+    tasks: { a: { label: A, on: $none }, b: { label: B, on: $map, creates: baum } }
+- name: 'A-005 key paths: bracketed segments in override, add and hide'
+  file:
+    schema: ueberblick/1
+    extends: baumkataster@1
+    override:
+      'views.karte.layers.baeume.style["circle-color"]': '#ff0000'
+      'types.baum.label["en-GB"]': Tree
+    add:
+      'views.karte.layers.baeume.style["a.b"]': 1
+    hide:
+      - 'views.karte.layers.baeume.style["circle-color"]'
+- name: 'A-005 key paths: lock with a bracketed segment'
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    lock: ['views.karte.layers.baeume.style["circle-color"]', types.baum.properties.stage.options]
+- name: 'A-004 3 relation label'
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    types:
+      baum:
+        label: Baum
+        properties: {}
+        relations:
+          flaeche: { to: flaeche, label: { de: Fläche, en: Area } }
+          gebiet: { to: flaeche, label: Gebiet }

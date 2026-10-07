@@ -1,0 +1,50 @@
+scenario: many_to_many_derived_relation
+title: "A derived relation with a compound predicate produces many edges and feeds a task's when"
+foundations: [F5, F9, F11]
+capabilities: [derived_relation, bind, reference]
+given:
+  project: projects/ordnungsamt-veranstaltungen.yaml
+  participants:
+    otto: { roles: [sachbearbeiter] }
+  now: "2026-05-01T08:00:00Z"
+  features:
+    # a and b overlap on the same date; c overlaps but on another date; d does not overlap at all
+    v_a: { type: veranstaltung, properties: { titel: Stadtlauf, datum: "2026-07-04", status: in_pruefung, geometrie: { type: Polygon, coordinates: [[[7.10, 50.73], [7.12, 50.73], [7.12, 50.75], [7.10, 50.75], [7.10, 50.73]]] } } }
+    v_b: { type: veranstaltung, properties: { titel: Markt, datum: "2026-07-04", status: in_pruefung, geometrie: { type: Polygon, coordinates: [[[7.11, 50.74], [7.13, 50.74], [7.13, 50.76], [7.11, 50.76], [7.11, 50.74]]] } } }
+    v_c: { type: veranstaltung, properties: { titel: Konzert, datum: "2026-07-05", status: in_pruefung, geometrie: { type: Polygon, coordinates: [[[7.11, 50.74], [7.13, 50.74], [7.13, 50.76], [7.11, 50.76], [7.11, 50.74]]] } } }
+    v_d: { type: veranstaltung, properties: { titel: Lesung, datum: "2026-07-04", status: in_pruefung, geometrie: { type: Polygon, coordinates: [[[7.30, 50.73], [7.31, 50.73], [7.31, 50.74], [7.30, 50.74], [7.30, 50.73]]] } } }
+when:
+  - id: s1                                # a collision blocks approval through genehmigen.when
+    kind: explain
+    task: genehmigen
+    actor: otto
+    feature: v_a
+  - id: s2
+    kind: explain
+    task: genehmigen
+    actor: otto
+    feature: v_c
+  - id: s3
+    kind: explain
+    task: genehmigen
+    actor: otto
+    feature: v_d
+  - id: s4                                # v_d has no auflagen: all() over an empty set is true
+    kind: run
+    task: genehmigen
+    actor: otto
+    feature: v_d
+    input: { begruendung: Keine Bedenken }
+then:
+  steps:
+    s1: { available: false, because: ["size(self.kollision) == 0"] }
+    s2: { available: true }
+    s3: { available: true }
+    s4: { outcome: accepted, observations: [{ feature: v_d, property: status, result: genehmigt }] }
+  edges:
+    - { from: v_a, relation: kollision, to: v_b, derived: true }
+    - { from: v_b, relation: kollision, to: v_a, derived: true }
+  edges_absent:
+    - { from: v_a, relation: kollision, to: v_c }        # other date
+    - { from: v_a, relation: kollision, to: v_a }        # never with itself
+    - { from: v_d, relation: kollision, to: v_a }

@@ -1,0 +1,54 @@
+# Synthetic v3 project definition: defect reports with private cases, an inactive workflow and per-field roles.
+format: 1
+version: 0
+source: { name: Mängelmelder, description: "" }
+settings: { display_name: Mängelmelder Beispielstadt, map_defaults: { zoom: 11, center: { lat: 48.14, lng: 11.58 } } }
+roles:
+  - { key: buerger, record: { name: Bürger } }
+  - { key: amt, record: { name: Amt } }
+custom_tables: []
+map_layers: []
+info_pages: []
+workflows:
+  - key: meldung
+    record: { name: Meldung, workflow_type: incident, geometry_type: point, marker_color: "#e53935", is_active: true, sort_order: 0, private_instances: true, visible_to_roles: ["@role/buerger", "@role/amt"] }
+    field_defs:
+      - { key: text, record: { field_label: Beschreibung, field_type: long_text } }
+      - { key: prio, record: { field_label: Priorität, field_type: dropdown, field_options: { options: [niedrig, hoch] }, view_roles: ["@role/amt"], write_roles: ["@role/amt"] } }
+      - { key: erledigt_am, record: { field_label: Erledigt am, field_type: date, field_options: { date_mode: date } } }
+    document:
+      version: 0
+      stages:
+        - { key: neu, name: Neu, type: start }
+        - { key: in_arbeit, name: In Arbeit, type: intermediate }
+        - { key: erledigt, name: Erledigt, type: end }
+      edges: [{ from_stage_key: neu, to_stage_key: in_arbeit }]
+      tasks:
+        - key: melden
+          name: Mangel melden
+          entry: true
+          activation: { mode: available }
+          conditions: [{ kind: role, role_ids: ["@role/buerger"] }]
+          tools: [{ key: f, kind: form, field_refs: [{ field_def_id: "@field/text", order: 0, page: 1, row: 0, column: full, required: true, prefill: { kind: empty }, force_dirty: false }] }]
+          effects: [{ effect: create_instance }]
+        - key: zurueckziehen
+          name: Meldung zurückziehen
+          activation: { mode: available }
+          conditions: [{ kind: ownership, value: self }, { kind: stage, op: in, stage_keys: [neu] }]
+          tools: []
+          effects: [{ effect: transition, to: erledigt }]
+        - key: bearbeiten
+          name: Bearbeiten
+          activation: { mode: available }
+          conditions: [{ kind: role, role_ids: ["@role/amt"] }, { kind: stage, op: in, stage_keys: [neu, in_arbeit] }]
+          tools: [{ key: f, kind: form, field_refs: [{ field_def_id: "@field/prio", order: 0, page: 1, row: 0, column: full, required: true, prefill: { kind: empty }, force_dirty: false }, { field_def_id: "@field/erledigt_am", order: 1, page: 1, row: 1, column: full, required: false, prefill: { kind: empty }, force_dirty: false }] }]
+          effects: [{ effect: transition, to: in_arbeit }]
+      automations:
+        - key: erinnerung
+          name: Erinnerung
+          trigger: { trigger_type: on_transition }
+          steps: []
+  - key: altfall
+    record: { name: Altfall, workflow_type: survey, geometry_type: point, is_active: false, sort_order: 1, visible_to_roles: [] }
+    field_defs: []
+    document: { version: 0, stages: [], edges: [], tasks: [] }

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "photo_choose": "Choose photo",
+  "photo_done": "Photo added",
+  "photo_failed": "The photo could not be processed. Try another image.",
+  "photo_limit": "Photo limit reached: remove one to add another.",
+  "photo_not_accepted": "This photo type is not allowed here.",
+  "photo_processing": "Processing photo …",
+  "photo_remove": "Remove photo",
+  "photo_take": "Take photo"
+}

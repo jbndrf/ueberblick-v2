@@ -1,0 +1,41 @@
+scenario: task_availability_and_explain
+title: "A task whose when is false is refused and explain names the reason"
+foundations: [F3, F5]
+capabilities: [permission_write]
+given:
+  project: projects/musterstadt-plain.yaml
+  include: [seeds/musterstadt-geo.yaml]
+  now: "2026-05-01T08:00:00Z"
+  features:
+    t_done:
+      type: baum
+      properties: { geometrie: { type: Point, coordinates: [7.101, 50.731] }, stage: erledigt, vitalitaet: "v1" }
+when:
+  - id: s1
+    kind: explain
+    task: kontrolle
+    actor: anna
+    feature: t_done
+  - id: s2
+    kind: run
+    task: kontrolle
+    actor: anna
+    feature: t_done
+    input: { vitalitaet: "v1", befund: nachgesehen }
+  - id: s3                                # right feature, wrong role
+    kind: explain
+    task: kontrolle
+    actor: bernd
+    feature: t_in
+  - id: s4
+    kind: run
+    task: gibt_es_nicht
+    actor: anna
+    feature: t_in
+    input: {}
+then:
+  steps:
+    s1: { available: false, because: ["self.stage != 'erledigt'"], values: { "self.stage": erledigt } }
+    s2: { outcome: refused, refusal: not_available, no_trace: true }
+    s3: { available: false, refusal: not_permitted, path: who }   # the role is the task's `who`, not part of its condition
+    s4: { outcome: refused, refusal: unknown_task, no_trace: true }

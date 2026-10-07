@@ -1,0 +1,3 @@
+# downloaded system libraries and results (machine-local)
+.libs/
+.results/

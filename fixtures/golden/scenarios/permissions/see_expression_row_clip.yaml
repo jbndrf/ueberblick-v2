@@ -1,0 +1,47 @@
+scenario: see_expression_row_clip
+title: "A see expression clips rows per actor, identically in views, sync and writes"
+foundations: [F6, F10, F12]
+capabilities: [permission_see, permission_write]
+given:
+  project: projects/ordnungsamt-veranstaltungen.yaml
+  participants:
+    paula: { roles: [antragsteller] }
+    peter: { roles: [antragsteller] }
+    otto: { roles: [sachbearbeiter] }
+  now: "2026-05-01T08:00:00Z"
+  features:
+    v_paula:
+      type: veranstaltung
+      properties: { titel: Sommerfest, datum: "2026-07-04", antragsteller: paula, status: eingereicht, geometrie: { type: Polygon, coordinates: [[[7.10, 50.73], [7.11, 50.73], [7.11, 50.74], [7.10, 50.74], [7.10, 50.73]]] }, interne_bewertung: Lärm kritisch }
+    v_peter:
+      type: veranstaltung
+      properties: { titel: Flohmarkt, datum: "2026-08-01", antragsteller: peter, status: eingereicht, geometrie: { type: Polygon, coordinates: [[[7.20, 50.73], [7.21, 50.73], [7.21, 50.74], [7.20, 50.74], [7.20, 50.73]]] } }
+when:
+  - id: s1
+    kind: view
+    view: sync_scope
+    actor: paula
+    type: veranstaltung
+  - id: s2
+    kind: view
+    view: sync_scope
+    actor: otto
+    type: veranstaltung
+  - id: s3                                # paula tries to reject peter's application: she cannot even see it
+    kind: run
+    task: ablehnen
+    actor: paula
+    feature: v_peter
+    input: { begruendung: Konkurrenz }
+  - id: s4
+    kind: view
+    view: sync_scope
+    actor: paula
+    type: veranstaltung
+    limit_properties: [titel, interne_bewertung]
+then:
+  steps:
+    s1: { ids: [v_paula], scope_fingerprint_differs_from: s2 }
+    s2: { ids: [v_paula, v_peter] }
+    s3: { outcome: refused, refusal: not_permitted, no_trace: true }
+    s4: { rows: { v_paula: { titel: Sommerfest } }, absent_properties: [interne_bewertung] }

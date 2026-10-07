@@ -1,0 +1,165 @@
+# Negative fixtures for A-004 items 1-11 and A-005 items 1 and 4. Each: name, expected issue path (dot-joined), whole file.
+- name: 'A-004 1 see with the old audience word'
+  path: types.baum.permissions.see
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    types: { baum: { label: Baum, properties: {}, permissions: { see: all } } }
+- name: 'A-004 2 localized is not a flag on text'
+  path: types.baum.properties.b
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    types: { baum: { label: Baum, properties: { b: { type: text, localized: true } } } }
+- name: 'A-004 3 cardinality outside the registry'
+  path: types.baum.relations.f.cardinality
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    types: { baum: { label: Baum, properties: {}, relations: { f: { to: flaeche, cardinality: some } } } }
+- name: 'A-004 4 inverse_of that is not <type>.<key>'
+  path: types.baum.relations.f.inverse_of
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    types: { baum: { label: Baum, properties: {}, relations: { f: { to: flaeche, inverse_of: flaeche } } } }
+- name: 'A-004 4 inverse_of and derive together'
+  path: types.baum.relations.f.inverse_of
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    types:
+      {
+        baum:
+          {
+            label: Baum,
+            properties: {},
+            relations: { f: { to: flaeche, inverse_of: flaeche.x, derive: 'true' } },
+          },
+      }
+- name: 'A-004 4 inverse_of names another type than to'
+  path: types.baum.relations.f.inverse_of
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    types: { baum: { label: Baum, properties: {}, relations: { f: { to: flaeche, inverse_of: park.x } } } }
+- name: 'A-004 5 task on $map without creates'
+  path: tasks.melden.creates
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    tasks: { melden: { label: Melden, on: $map } }
+- name: 'A-004 5 creates is not a key'
+  path: tasks.melden.creates
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    tasks: { melden: { label: Melden, on: $map, creates: Meldung } }
+- name: 'A-004 6 automatic action with `with` (values come from then.set)'
+  path: tasks.t.auto.r
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    tasks: { t: { label: T, on: baum, auto: { r: { after: k, with: { art: x } } } } }
+- name: 'A-004 7 elapsed timing without from'
+  path: tasks.t.auto.r.elapsed.from
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    tasks: { t: { label: T, on: baum, auto: { r: { elapsed: { after: 'days(1)' } } } } }
+- name: 'A-004 7 unknown timing key'
+  path: tasks.t.auto.r
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    tasks: { t: { label: T, on: baum, auto: { r: { webhook: { url: x } } } } }
+- name: 'A-004 7 schedule that is not a cron expression'
+  path: tasks.t.auto.r.schedule
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    tasks: { t: { label: T, on: baum, auto: { r: { schedule: nightly } } } }
+- name: 'A-004 7 entry without a timing needs when'
+  path: tasks.t.auto.r.when
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    tasks: { t: { label: T, on: baum, auto: { r: { label: X } } } }
+- name: 'A-004 8 visible_when is not a string'
+  path: types.baum.permissions.visible_when
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    types: { baum: { label: Baum, properties: {}, permissions: { visible_when: [a] } } }
+- name: 'A-004 9 then.set value that is an object'
+  path: tasks.t.then.0.set.stage
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    tasks: { t: { label: T, on: baum, then: [{ set: { stage: { a: 1 } } }] } }
+- name: 'A-004 10 primary geometry names a property that is not a geometry'
+  path: types.baum.geometry
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    types: { baum: { label: Baum, geometry: name, properties: { name: { type: text } } } }
+- name: 'A-004 10 geometry_type outside the registry'
+  path: types.baum.properties.g.geometry_type
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    types: { baum: { label: Baum, properties: { g: { type: geometry, geometry_type: sphere } } } }
+- name: 'A-004 10 geometry_type on a text property'
+  path: types.baum.properties.g.geometry_type
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    types: { baum: { label: Baum, properties: { g: { type: text, geometry_type: point } } } }
+- name: 'A-004 11 option key starts with a digit'
+  path: types.baum.properties.v.options.0
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    types: { baum: { label: Baum, properties: { v: { type: select, options: { '0': '0' } } } } }
+- name: 'A-005 4 unknown platform keyword'
+  path: tasks.t.on
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    tasks: { t: { label: T, on: $everywhere } }
+- name: 'A-005 4 old audience word without sigil'
+  path: types.baum.permissions.write
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    types: { baum: { label: Baum, properties: {}, permissions: { write: all } } }
+- name: 'A-005 1 role app tools is a list'
+  path: roles.r.app.tools
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    roles: { r: { label: R, app: { tools: [photo] } } }
+- name: 'A-005 1 role app shortcuts is a list'
+  path: roles.r.app.shortcuts
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    roles: { r: { label: R, app: { shortcuts: [melden] } } }
+- name: 'A-005 key path with an unbracketed dash segment'
+  path: override.views.karte.style.circle-color
+  file: { schema: ueberblick/1, extends: baumkataster@1, override: { views.karte.style.circle-color: 1 } }
+- name: 'A-005 key path with an unterminated bracket'
+  path: 'add.views.karte.style["circle-color'
+  file: { schema: ueberblick/1, extends: baumkataster@1, add: { 'views.karte.style["circle-color': 1 } }
+- name: 'A-005 key path with an empty segment'
+  path: hide.0
+  file: { schema: ueberblick/1, extends: baumkataster@1, hide: ['tasks..melden'] }
+- name: 'A-005 lock path with an unquoted bracket segment'
+  path: lock.0
+  file: { schema: ueberblick/1, template: { key: a, version: 1.0.0 }, lock: ['style[circle-color]'] }
+- name: 'A-004 3 relation label that is not a label'
+  path: types.baum.relations.f.label
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    types: { baum: { label: Baum, properties: {}, relations: { f: { to: flaeche, label: 5 } } } }

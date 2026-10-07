@@ -1,0 +1,48 @@
+scenario: timer_cancelled_by_state
+title: "A timer follows its property; a rule condition that became false never fires"
+foundations: [F3, F4, F12]
+capabilities: [timer]
+given:
+  project: projects/musterstadt-plain.yaml
+  include: [seeds/musterstadt-geo.yaml]
+  now: "2026-05-01T08:00:00Z"
+  features:
+    t_mid:                                  # inside the park, due 2026-06-01
+      type: baum
+      properties: { geometrie: { type: Point, coordinates: [7.101, 50.731] }, stage: erfasst, vitalitaet: "v1", faellig_am: "2026-06-01", befund: alt }
+    t_done:                                 # already past due, but its stage is erledigt: the rule's when is false
+      type: baum
+      properties: { geometrie: { type: Point, coordinates: [7.108, 50.738] }, stage: erledigt, vitalitaet: "v1", faellig_am: "2026-03-01" }
+when:
+  - id: s1                                  # t_in (due 2026-04-01) is overdue; t_done is excluded by the rule condition
+    kind: advance
+    to: "2026-05-01T08:00:01Z"
+  - id: s2                                  # inspecting t_mid moves its faellig_am and therefore its timer
+    kind: run
+    task: kontrolle
+    actor: anna
+    feature: t_mid
+    input: { vitalitaet: "v1", befund: Kontrolliert }
+  - id: s3                                  # t_out (due 2026-06-01) fires; t_mid does not any more
+    kind: advance
+    to: "2026-07-01T00:00:00Z"
+then:
+  steps:
+    s1:
+      fired:
+        - { rule: system_faellig.kontrolle_wird_faellig, task: system_faellig, actor_kind: system, feature: t_in, outcome: accepted }
+      timers_after:
+        - { feature: t_mid, rule: system_faellig.kontrolle_wird_faellig, due_at: "2026-06-01T00:00:00Z" }
+        - { feature: t_out, rule: system_faellig.kontrolle_wird_faellig, due_at: "2026-06-01T00:00:00Z" }
+      timers_absent: [{ feature: t_done, rule: system_faellig.kontrolle_wird_faellig }]
+    s2:
+      outcome: accepted
+      timers_after: [{ feature: t_mid, rule: system_faellig.kontrolle_wird_faellig, due_at: "2027-05-01T00:00:00Z" }]
+    s3:
+      fired:
+        - { rule: system_faellig.kontrolle_wird_faellig, task: system_faellig, actor_kind: system, feature: t_out, outcome: accepted }
+  features:
+    t_in: { properties: { kontrolle_faellig: true } }
+    t_out: { properties: { kontrolle_faellig: true } }
+    t_mid: { properties: { kontrolle_faellig: false, faellig_am: "2027-05-01" } }
+    t_done: { properties: { kontrolle_faellig: false } }

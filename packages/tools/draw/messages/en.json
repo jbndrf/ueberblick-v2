@@ -1,0 +1,8 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "draw_empty": "No shape yet. It is drawn on the map.",
+  "draw_kindArea": "Area",
+  "draw_kindLine": "Line",
+  "draw_kindPoint": "Point",
+  "draw_summary": "{kind}: {parts} part(s), {points} points"
+}

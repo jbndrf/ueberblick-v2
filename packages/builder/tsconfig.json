@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "incremental": true,
+    "tsBuildInfoFile": "../../node_modules/.cache/tsc/builder.tsbuildinfo",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "allowJs": true,
+    "checkJs": false,
+    "noEmit": true,
+    "types": ["node"],
+    "paths": {
+      "@ueberblick/ui/components/ui/button": ["./src/v3/kit/button.d.ts"],
+      "@ueberblick/ui/components/ui/input": ["./src/v3/kit/input.d.ts"]
+    }
+  },
+  "include": ["../core/src/**/*.d.ts", "src/**/*.ts", "src/**/*.svelte", "../ui/src/paraglide/**/*.js"],
+  "exclude": ["node_modules", "**/*.planted*", "**/*.planted/**"]
+}

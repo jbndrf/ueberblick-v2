@@ -1,0 +1,3 @@
+schema: ueberblick/1
+extends: maengelmelder@1
+inputs: { eskalation_tage: 3 }

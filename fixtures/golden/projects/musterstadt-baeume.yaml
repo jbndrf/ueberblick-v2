@@ -1,0 +1,13 @@
+schema: ueberblick/1
+extends: baumkataster@1
+inputs: { kontrollintervall_monate: 18 }
+override:
+  tasks.kontrolle.label: { de: Regelkontrolle, en: Routine inspection }      # kept override on upgrade
+  types.baum.properties.vitalitaet.label: { de: Vitalität (Roloff), en: Vitality (Roloff) }   # conflicts with 2.0.0
+add:
+  types.baum.properties.patenschaft: { type: text, label: { de: Patenschaft, en: Sponsorship } }
+  views.paten:
+    label: { de: Patenbäume, en: Sponsored trees }
+    source: { type: baum, filter: "self.patenschaft != '' && self.stage == 'kontrolliert'" }
+hide:
+  - tasks.erfassung_import

@@ -1,0 +1,263 @@
+schema: ueberblick/1
+template: { key: baumkataster, version: 2.0.0 }
+
+inputs:
+  kontrollintervall_monate: { type: integer, default: 12, label: { de: Kontrollintervall (Monate), en: Inspection interval (months) }, description: { de: "Nach so vielen Monaten ist ein Baum erneut zur Kontrolle fällig. Gilt für die Aufgaben \"Baum erfassen\" (erfassen) und \"Kontrolle durchführen\" (kontrolle): sie setzen \"Fällig am\" auf heute plus diese Monate.", en: "After this many months a tree is due for inspection again. Used by the tasks \"Record tree\" (erfassen) and \"Perform inspection\" (kontrolle): they set \"Due on\" to today plus these months." } }
+
+lock:
+  - types.baum.properties.stage.options
+
+map:
+  start: { center: [10.4515, 51.1657], zoom: 10 }
+  layers:
+    osm: { label: { de: Straßenkarte, en: Street map }, kind: base, source: { type: preset, preset: osm }, on_at_start: true }
+
+roles:
+  kontrolle:
+    label: { de: Baumkontrolle, en: Tree inspection }
+    app:
+      home: karte
+      views: { karte: {}, meine_aufgaben: {} }
+      tools: { measure: { availability: offered }, search: { availability: active }, photo: { availability: active }, views: { availability: offered }, cluster: { availability: offered } }
+      shortcuts: { kontrolle: {} }
+  bauhof:
+    label: { de: Bauhof, en: Works yard }
+    app: { home: meine_aufgaben, views: { meine_aufgaben: {} }, tools: { photo: {} }, shortcuts: { massnahme_erledigen: {} } }
+  verwaltung:
+    label: { de: Verwaltung, en: Administration }
+    app: { home: karte, views: { karte: {}, meine_aufgaben: {}, alle_baeume: {} }, tools: { search: {}, views: { availability: offered }, cluster: { availability: offered } }, shortcuts: {} }
+
+types:
+  baumart:                                       # a lookup table: a feature type without geometry
+    label: { de: Baumart, en: Tree species }
+    permissions: { see: $all, create: [verwaltung], write: [verwaltung] }
+    properties:
+      name_de: { type: text, required: true, label: { de: Name, en: Name } }
+      name_lat: { type: text, label: { de: Lateinischer Name, en: Latin name } }
+  flaeche:
+    label: { de: Fläche, en: Area }
+    geometry: geometrie
+    permissions: { see: $all, create: [verwaltung], write: [verwaltung, kontrolle] }
+    properties:
+      name: { type: text, label: { de: Name, en: Name }, required: true }
+      geometrie: { type: geometry, geometry_type: polygon, required: true, label: { de: Standort, en: Location } }
+      letzte_kontrolle: { type: date, label: { de: Letzte Kontrolle, en: Last inspection } }
+  baum:
+    label: { de: Baum, en: Tree }
+    geometry: geometrie
+    permissions:
+      see: { intern_notiz: [kontrolle, verwaltung] }
+      create: [kontrolle, verwaltung]
+      write:
+        geometrie: [kontrolle, verwaltung]
+        vitalitaet: [kontrolle]
+        art: [kontrolle, verwaltung]
+        beschreibung: [kontrolle, verwaltung]
+        hoehe_m: [kontrolle]
+        hoehe_klasse: [kontrolle]
+        befund: [kontrolle]
+        foto: [kontrolle, bauhof]
+        zustaendig: [verwaltung]
+        stage: [kontrolle, bauhof, verwaltung]
+        faellig_am: [kontrolle]
+        kontrolle_faellig: [kontrolle]            # system runs (rules) are exempt from write allowlists
+    process: { property: stage, start: erfasst, end: [erledigt] }
+    marker: { color: "#2f855a", icon: { key: tree-deciduous } }
+    classify:
+      property: stage
+      values:
+        erfasst: { color: "#2b6cb0" }
+        geprueft: { color: "#2f855a", icon: { key: check } }
+        massnahme: { color: "#c05621", icon: { key: wrench } }
+        erledigt: { color: "#718096", icon: { key: check } }
+    properties:
+      geometrie: { type: geometry, geometry_type: point, required: true, label: { de: Standort, en: Location } }
+      art: { type: reference, to: baumart, label: { de: Baumart, en: Species } }
+      stage:
+        type: select
+        label: { de: Status, en: Status }
+        options: { erfasst: { de: Erfasst, en: Recorded }, geprueft: { de: Geprüft, en: Checked }, massnahme: { de: Maßnahme, en: Measure }, erledigt: { de: Erledigt, en: Completed } }
+      vitalitaet:
+        type: select
+        label: { de: Vitalität (Stufe), en: Vitality (level) }
+        options: { v0: "0", v1: "1", v2: "2", v3: "3", v4: "4" }
+        display: { tab: Kontrolle, tab_order: 1, row: 1, column: left, history: measurements }
+      befund:
+        type: text
+        label: { de: Befund (Freitext), en: Finding (free text) }
+        display: { tab: Kontrolle, tab_order: 1, row: 1, column: right, condition: "self.vitalitaet != null" }
+      foto: { type: file, accept: [image/*], label: { de: Foto, en: Photo } }
+      zustaendig: { type: participant, index: true, select: { all: [verwaltung] }, label: { de: Zuständig, en: Assigned to } }
+      faellig_am: { type: date, index: true, label: { de: Fällig am, en: Due on } }
+      kontrolle_faellig: { type: boolean, default: false, label: { de: Kontrolle fällig, en: Inspection due } }
+      hoehe_m: { type: number, min: 0, label: { de: Höhe (m), en: Height (m) } }
+      hoehe_klasse: { type: text, label: { de: Höhenklasse, en: Height class } }
+      intern_notiz: { type: text, label: { de: Interne Notiz, en: Internal note } }
+      beschreibung: { type: localized_text, label: { de: Beschreibung, en: Description } }
+    relations:
+      flaeche: { to: flaeche, derive: "within(self.geometrie, other.geometrie)", cardinality: one }
+      randlage: { to: flaeche, derive: "intersects(self.geometrie, other.geometrie)", cardinality: many }
+      massnahmen: { to: massnahme, inverse_of: massnahme.baum, label: { de: Maßnahmen, en: Measures } }
+  massnahme:
+    label: { de: Maßnahme, en: Measure }
+    permissions: { see: $all, create: [kontrolle, verwaltung], write: [kontrolle, bauhof, verwaltung] }
+    properties:
+      baum: { type: reference, to: baum, required: true, label: { de: Baum, en: Tree } }
+      art: { type: select, options: { faellen: { de: Fällen, en: Felling }, schnitt: { de: Kronenschnitt, en: Crown pruning }, ersatz: { de: Ersatzpflanzung, en: Replacement planting } }, required: true, label: { de: Art, en: Kind } }
+      erledigt_am: { type: date, label: { de: Erledigt am, en: Completed on } }
+      zustaendig: { type: participant, label: { de: Zuständig, en: Assigned to } }
+
+tasks:
+  erfassen:
+    label: { de: Baum erfassen, en: Record tree }
+    on: $map
+    who: [kontrolle, verwaltung]
+    creates: baum
+    form:
+      geometrie: { tool: draw, required: true }
+      art: {}
+      vitalitaet: { required: true, row: 1, column: left }
+      beschreibung: {}
+    then:
+      - set: { faellig_am: "today() + months(inputs.kontrollintervall_monate)" }
+  kontrolle:
+    label: { de: Kontrolle durchführen, en: Perform inspection }
+    on: baum
+    who: [kontrolle]
+    when: "self.stage != 'erledigt'"
+    bind: { area: self.flaeche }
+    form:
+      vitalitaet: { calculate: "self.vitalitaet", required: true, row: 1, column: left }
+      befund:
+        required: true
+        row: 1
+        column: right
+        constraint: "value != self.befund"
+        constraint_message: { de: Befund muss sich ändern, en: The finding must change }
+      foto: { tool: photo, relevant: "form.vitalitaet >= 'v3'" }
+      hoehe_m: { constraint: "value > 0 && value < 60", constraint_message: { de: Höhe zwischen 0 und 60 m } }
+      hoehe_klasse: { readonly: true, calculate: "form.hoehe_m == null ? '' : (form.hoehe_m < 10 ? 'klein' : (form.hoehe_m < 25 ? 'mittel' : 'gross'))" }
+    then:
+      - set: { "area.letzte_kontrolle": "today()" }
+      - { set: { stage: "'massnahme'" }, when: "form.vitalitaet >= 'v3'" }
+      - { set: { stage: "'geprueft'" }, otherwise: true }
+      - set: { faellig_am: "today() + months(inputs.kontrollintervall_monate)" }
+      - set: { kontrolle_faellig: false }
+  befund_ergaenzen:
+    label: { de: Befund ergänzen, en: Add finding }
+    on: baum
+    who: [kontrolle]
+    form:
+      befund: { required: true }
+  verschieben:
+    label: { de: Baum verschieben, en: Move tree }
+    on: baum
+    who: [kontrolle, verwaltung]
+    form:
+      geometrie: { tool: draw, required: true }
+  baum_bearbeiten:
+    label: { de: Baum bearbeiten, en: Edit tree }
+    on: baum
+    who: [kontrolle, verwaltung]
+    steps:
+      - { kind: quick_edit, properties: [beschreibung] }
+      - { kind: location, property: geometrie }
+    button: { label: { de: Bearbeiten, en: Edit }, color: neutral, icon: pencil }
+    confirm: { de: Änderungen speichern?, en: Save the changes? }
+  flaeche_bearbeiten:
+    label: { de: Fläche bearbeiten, en: Edit area }
+    on: flaeche
+    who: [verwaltung]
+    form:
+      geometrie: { tool: draw, required: true }
+  flaeche_anlegen:
+    label: { de: Fläche anlegen, en: Create area }
+    on: $map
+    who: [verwaltung, admin]
+    creates: flaeche
+    form:
+      name: { required: true }
+      geometrie: { tool: draw, required: true }
+  baumart_anlegen:
+    label: { de: Baumart anlegen, en: Add species }
+    on: $none
+    who: [verwaltung]
+    creates: baumart
+    form:
+      name_de: { required: true }
+      name_lat: {}
+  massnahme_anlegen:
+    label: { de: Maßnahme anlegen, en: Create measure }
+    on: baum
+    who: [kontrolle, verwaltung]
+    when: "self.stage == 'massnahme'"
+    creates: massnahme
+    form:
+      art: { required: true }
+    then:
+      - set: { baum: self, art: "form.art != null ? form.art : 'schnitt'" }
+    auto:
+      massnahme_bei_schaden:
+        after: kontrolle
+        when: "self.vitalitaet >= 'v3'"
+  massnahme_erledigen:
+    label: { de: Maßnahme erledigen, en: Complete measure }
+    on: massnahme
+    who: [bauhof]
+    when: "self.erledigt_am == null"
+    bind: { tree: self.baum }
+    then:
+      - set: { erledigt_am: "today()" }
+      - set: { "tree.stage": "'erledigt'" }
+  zuweisen:
+    label: { de: Zuweisen, en: Assign }
+    on: baum
+    who: [verwaltung, admin]
+    form:
+      zustaendig: { required: true }
+  erfassung_import:
+    label: { de: Import, en: Import }
+    on: $none
+    who: [import]
+    creates: baum
+  system_faellig:
+    label: { de: Kontrolle als fällig markieren, en: Mark inspection as due }
+    on: baum
+    then:
+      - set: { kontrolle_faellig: true }
+    auto:
+      kontrolle_wird_faellig:
+        elapsed: { from: self.faellig_am }
+        when: "self.stage != 'erledigt' && self.kontrolle_faellig == false"
+
+views:
+  karte:
+    label: { de: Karte, en: Map }
+    source: { type: baum }
+    layers:
+      baeume:
+        source: { type: baum }
+        renderer: maplibre-2d
+      flaechen:
+        source: { type: flaeche }
+        renderer: maplibre-2d
+  meine_aufgaben:
+    label: { de: Meine Aufgaben, en: My tasks }
+    source: { type: baum, filter: "self.zustaendig == actor.id && self.faellig_am <= today()" }
+    sort: [faellig_am]
+  alle_baeume:
+    label: { de: Alle Bäume, en: All trees }
+    source: { type: baum }
+    sort: [faellig_am]
+
+tools:
+  measure: {}
+  search: { sources: [baum.befund] }
+  photo: {}
+  draw: {}
+  views: {}
+  cluster: {}
+
+migrations:
+  "1 -> 2":
+    - rename_option: { property: types.baum.properties.stage, from: kontrolliert, to: geprueft }

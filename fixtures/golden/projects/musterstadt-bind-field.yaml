@@ -1,0 +1,11 @@
+schema: ueberblick/1
+extends: baumkataster@1
+inputs: { kontrollintervall_monate: 12 }
+add:
+  tasks.flaeche_pruefen:                         # a form field of a bound Objekt (A-047): the area's name, edited from a tree
+    label: { de: Fläche prüfen, en: Check area }
+    on: baum
+    who: [kontrolle, bauhof]
+    bind: { area: self.flaeche }
+    form:
+      area.name: { required: true, constraint: "value != ''", constraint_message: { de: Name fehlt, en: Name missing } }

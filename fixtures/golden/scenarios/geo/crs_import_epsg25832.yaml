@@ -1,0 +1,43 @@
+scenario: crs_import_epsg25832
+title: "An import declares EPSG:25832 (UTM 32N); geometry is stored in WGS84 within a millimetre-scale tolerance"
+foundations: [F3, F11]
+capabilities: [crs_import]
+given:
+  project: projects/musterstadt-plain.yaml
+  participants:
+    admin1: { roles: [], kind: admin }
+  now: "2026-05-01T08:00:00Z"
+when:
+  - id: s1                                # coordinates in metres (E, N), as delivered by a German cadastre export
+    kind: import
+    format: geojson
+    source_crs: EPSG:25832
+    actor: { kind: import, id: kataster-2026 }
+    task: erfassung_import
+    features:
+      - { alias: i1, properties: { vitalitaet: "v2" }, geometry: { type: Point, coordinates: [366057.18, 5621740.81] } }
+      - { alias: i2, properties: { vitalitaet: "v3" }, geometry: { type: Point, coordinates: [366277.42, 5622068.94] } }
+  - id: s2                                # detection by magnitude: this file declares nothing but looks like UTM
+    kind: import
+    format: geojson
+    actor: { kind: import, id: kataster-2026 }
+    task: erfassung_import
+    features:
+      - { alias: i3, properties: { vitalitaet: "v1" }, geometry: { type: Point, coordinates: [366057.18, 5621740.81] } }
+    detect_crs: true
+then:
+  steps:
+    s1:
+      outcome: accepted
+      actor_kind: import
+      stored_crs: EPSG:4326
+    s2:
+      outcome: refused
+      refusal: crs_undeclared
+      crs_suggestion: { code: EPSG:25832, reason: easting about 500000 and northing about 5300000, needs_confirmation: true }
+      no_trace: true
+  features:
+    i1: { properties: { geometrie: { type: Point, coordinates: { approx: [7.102, 50.732], abs_tol: 0.000001 } } } }
+    i2: { properties: { geometrie: { type: Point, coordinates: { approx: [7.105, 50.735], abs_tol: 0.000001 } } } }
+    i3: { exists: false }
+  provenance: { i1: { source_crs: EPSG:25832 }, i2: { source_crs: EPSG:25832 } }

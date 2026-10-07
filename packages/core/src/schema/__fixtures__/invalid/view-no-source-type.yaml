@@ -1,0 +1,2 @@
+# Negative: the source has no type.
+source: { filter: 'true' }

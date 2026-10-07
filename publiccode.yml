@@ -1,0 +1,47 @@
+# publiccode.yml (https://yml.publiccode.tools). needs-owner: url, contacts and organisation are placeholders.
+publiccodeYmlVersion: '0'
+name: Überblick
+url: https://github.com/example/ueberblick
+softwareVersion: 4.0.0-dev
+platforms:
+  - web
+  - android
+  - ios
+developmentStatus: development
+softwareType: standalone/web
+categories:
+  - geographic-information-systems
+  - crm
+description:
+  en:
+    shortDescription: Offline-first platform for geo-referenced features and the tasks that change them.
+    longDescription: >-
+      Überblick lets municipalities and field teams keep geo-referenced features (a tree cadastre, defect
+      reports, event approvals) and run the tasks that change them, on a map, offline and in sync.
+    features:
+      - Offline-first field work with a synchronised run queue
+      - Map-based features with configurable tasks and rules
+      - One project file per project, edited in a builder
+  de:
+    shortDescription: Offline-fähige Plattform für georeferenzierte Objekte und die Aufgaben, die sie verändern.
+    longDescription: >-
+      Überblick hilft Kommunen und Außendienstteams, georeferenzierte Objekte (Baumkataster, Mängelmeldungen,
+      Veranstaltungsgenehmigungen) zu führen und die Aufgaben auszuführen, die sie verändern, auf der Karte,
+      offline und synchronisiert.
+    features:
+      - Offline-Arbeit im Feld mit synchronisierter Warteschlange
+      - Kartenbasierte Objekte mit konfigurierbaren Aufgaben und Regeln
+      - Eine Projektdatei pro Projekt, bearbeitet im Builder
+legal:
+  # O7 (docs/decisions/open.md): AGPL-3.0, decided by the owner 2026-10-04 (full text in LICENSE).
+  license: AGPL-3.0-only
+maintenance:
+  type: internal
+  contacts:
+    - name: needs-owner
+      email: maintainer@example.org
+localisation:
+  localisationReady: true
+  availableLanguages:
+    - en
+    - de

@@ -1,0 +1,38 @@
+scenario: rule_chain_depth_limit
+title: "A chain deeper than the platform limit refuses the triggering run and rolls everything back"
+foundations: [F3, F5]
+capabilities: [rule_depth_limit, rule_chain]
+given:
+  project: projects/stadtwerke-meldungen.yaml
+  include: [seeds/stadtwerke.yaml]
+  now: "2026-05-01T08:00:00Z"
+  platform: { rule_depth_limit: 2 }        # the chain needs 3
+when:
+  - id: s1
+    kind: run
+    task: melden
+    actor: sabine
+    creates: $new:m1
+    input:
+      geometrie: { type: Point, coordinates: [7.10, 50.75] }
+      kategorie: strasse
+      beschreibung: { de: Schlagloch }
+      prioritaet: hoch
+      dringlich_begruendung: Radweg
+  - id: s2                                 # a non-urgent report starts no chain and is fine under the same limit
+    kind: run
+    task: melden
+    actor: sabine
+    creates: $new:m2
+    input:
+      geometrie: { type: Point, coordinates: [7.11, 50.75] }
+      kategorie: strasse
+      beschreibung: { de: Kleines Loch }
+      prioritaet: normal
+then:
+  steps:
+    s1: { outcome: refused, refusal: depth_exceeded, depth_reached: 3, no_trace: true }   # not even the first run's observations stay
+    s2: { outcome: accepted }
+  features:
+    m1: { exists: false }
+    m2: { properties: { status: offen } }

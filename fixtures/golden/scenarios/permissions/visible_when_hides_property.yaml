@@ -1,0 +1,37 @@
+scenario: visible_when_hides_property
+title: "A property that permissions.see limits to other roles is absent from views, sync scope and the API for roles that may not see it"
+foundations: [F6, F10]
+capabilities: [visible_when, permission_see]
+given:
+  project: projects/musterstadt-plain.yaml
+  include: [seeds/musterstadt-geo.yaml]
+  now: "2026-05-01T08:00:00Z"
+when:
+  - id: s1
+    kind: view
+    view: alle_baeume
+    actor: vera
+    limit_properties: [stage, intern_notiz]
+  - id: s2                                # bauhof queries the same feature through the sync scope
+    kind: view
+    view: sync_scope
+    actor: bernd
+    filter: "self.stage == 'erfasst'"
+    limit_properties: [stage, intern_notiz]
+  - id: s3
+    kind: export
+    format: geojson
+    actor: bernd
+    type: baum
+then:
+  steps:
+    s1:
+      rows:
+        t_in: { stage: erfasst, intern_notiz: Wurzelschaden prüfen }
+    s2:
+      rows:
+        t_in: { stage: erfasst }
+      absent_properties: [intern_notiz]
+    s3:
+      absent_properties: [intern_notiz]
+      feature_count: 4

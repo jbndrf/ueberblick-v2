@@ -1,0 +1,13 @@
+{
+  "name": "root",
+  "version": "1.0.0",
+  "problems": [
+    "extraneous: left-pad@1.3.0 ./node_modules/left-pad",
+    "missing: ghost@^1.0.0, required by root@1.0.0"
+  ],
+  "dependencies": {
+    "zod": { "version": "3.23.8", "resolved": "https://registry.npmjs.org/zod/-/zod-3.23.8.tgz" },
+    "left-pad": { "version": "1.3.0", "extraneous": true, "problems": ["extraneous: left-pad@1.3.0"] },
+    "ghost": { "required": "^1.0.0", "missing": true, "problems": ["missing: ghost@^1.0.0"] }
+  }
+}

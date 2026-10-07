@@ -1,0 +1,8 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "draw_empty": "Noch keine Form. Sie wird auf der Karte gezeichnet.",
+  "draw_kindArea": "Fläche",
+  "draw_kindLine": "Linie",
+  "draw_kindPoint": "Punkt",
+  "draw_summary": "{kind}: {parts} Teil(e), {points} Punkte"
+}

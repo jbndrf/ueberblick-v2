@@ -1,0 +1,18 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "chat_composer_label": "Nachricht schreiben",
+  "chat_empty": "Noch keine Nachrichten. Sag doch hallo!",
+  "chat_failed": "Die Nachricht konnte nicht gespeichert werden.",
+  "chat_list_label": "Nachrichten",
+  "chat_mention_empty": "Keine Teilnehmer:innen",
+  "chat_mention_label": "Jemanden erwähnen",
+  "chat_not_member": "Der Projekt-Chat ist für deine Rolle nicht verfügbar.",
+  "chat_pending": "Wird gesendet …",
+  "chat_placeholder": "Nachricht…",
+  "chat_refused": "Nicht gesendet: {reason}",
+  "chat_refused_discard": "Verwerfen",
+  "chat_refused_retry": "Erneut senden",
+  "chat_send": "Senden",
+  "chat_unknown": "Unbekannt",
+  "chat_you": "Du"
+}

@@ -1,0 +1,19 @@
+# Generator spec for the 60k-feature benchmark dataset (docs/12-performance-budgets.md).
+# Implemented later in bench/; it uses baumkataster 1.0.0. The generator is deterministic:
+# the same seed gives the same dataset, byte for byte.
+seed: 4711
+template: templates/baumkataster/1.0.0.yaml
+total_features: 60000
+region:                       # WGS84 bounding box, a mid-sized German city plus surroundings
+  bbox: [7.0, 50.6, 7.3, 50.8]
+types:
+  baum:      { count: 52000, geometry: point, distribution: clustered, clusters: 400, cluster_sigma_m: 150 }
+  flaeche:   { count: 800, geometry: polygon, vertices: [5, 40], holes_share: 0.1 }
+  massnahme: { count: 7000, geometry: none, reference: { property: baum, pick: uniform } }
+  baumart:   { count: 200, geometry: none }
+history:
+  observations_per_property: { min: 1, max: 6 }   # the device keeps the last 10
+  kontrollen_share: 0.4
+assignment: { participants: 40, assigned_share: 0.25 }
+derived_edges: { relation: baum.flaeche, expected_share: 0.7 }
+deltas: { size: [1, 200], count: 1000 }           # for the delta-latency benchmark

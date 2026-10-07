@@ -1,0 +1,99 @@
+schema: ueberblick/1
+template: { key: baumkataster, version: 1.0.0 }
+
+inputs: # intended customisation points
+  kontrollintervall_monate: { type: integer, default: 12, label: { de: Kontrollintervall (Monate) } }
+
+lock: # overlay may not touch these
+  - types.baum.properties.stage.options
+
+roles:
+  kontrolle:
+    label: { de: Baumkontrolle }
+    app: # per-role app profile (H3)
+      home: karte
+      views: { karte: {}, meine_aufgaben: {} }
+      tools: { measure: {}, search: {}, photo: {} }
+      shortcuts: { kontrolle: {} }
+      presets: { neuer_baum: { stage: erfasst } }
+      ui: { density: compact }
+  bauhof:
+    label: { de: Bauhof }
+    app: { home: meine_aufgaben, views: { meine_aufgaben: {} }, tools: { photo: {} } }
+
+types:
+  flaeche:
+    label: { de: Fläche }
+    geometry: umriss
+    properties:
+      umriss: { type: geometry, geometry_type: polygon, required: true }
+      name: { type: text, label: Name, required: true }
+      letzte_kontrolle: { type: date, label: { de: Letzte Kontrolle } }
+  baum:
+    label: { de: Baum }
+    geometry: standort
+    permissions: { see: $all, create: [kontrolle], write: { vitalitaet: [kontrolle] } }
+    properties:
+      standort: { type: geometry, geometry_type: point, required: true }
+      stage:
+        {
+          type: select,
+          options: { erfasst: Erfasst, kontrolliert: Kontrolliert, massnahme: Maßnahme, erledigt: Erledigt },
+          default: erfasst,
+        }
+      vitalitaet: { type: select, options: { v0: '0', v1: '1', v2: '2', v3: '3', v4: '4' } }
+      befund: { type: text }
+      foto: { type: file, accept: [image/*] }
+      zustaendig: { type: participant, index: true }
+      faellig_am: { type: date, index: true }
+    relations:
+      flaeche: { to: flaeche, derive: 'within(self.standort, other.umriss)' }
+
+tasks:
+  kontrolle:
+    label: { de: Kontrolle durchführen }
+    on: baum
+    when: "'kontrolle' in actor.roles && self.stage != 'erledigt'"
+    bind: { area: self.flaeche }
+    form:
+      vitalitaet: { calculate: 'self.vitalitaet' }
+      befund:
+        {
+          required: true,
+          constraint: 'value != self.befund',
+          constraint_message: { de: Befund muss sich ändern },
+        }
+      foto: { tool: photo, relevant: "form.vitalitaet >= 'v3'" }
+    then:
+      - set: { 'area.letzte_kontrolle': 'today()' }
+      - { set: { stage: massnahme }, when: "form.vitalitaet >= 'v3'" }
+      - { set: { stage: kontrolliert }, otherwise: true }
+      - set: { faellig_am: 'today() + months(inputs.kontrollintervall_monate)' }
+  melden:
+    label: Melden
+    on: $none
+    auto:
+      spielplatz_melden:
+        after: kontrolle
+        when: "self.flaeche.name.startsWith('Spielplatz') && self.vitalitaet >= 'v2'"
+
+views:
+  karte:
+    label: Karte
+    source: { type: baum }
+    layers:
+      baeume:
+        source: { type: baum }
+        renderer: maplibre-2d
+        style: { $ref: styles/baum.json }
+  meine_aufgaben:
+    source: { type: baum, filter: 'self.zustaendig == actor.id && self.faellig_am <= today()' }
+    sort: [faellig_am]
+
+tools:
+  measure: {}
+  search: { sources: [baum.nummer, address] }
+
+migrations:
+  '1 -> 2':
+    - rename_option: { property: types.baum.properties.stage, from: kontrolliert, to: geprueft }

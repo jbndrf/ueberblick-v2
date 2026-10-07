@@ -1,0 +1,13 @@
+# Shared seed for maengelmelder scenarios. One district whose head (hans) receives assignments.
+participants:
+  mia: { roles: [melder] }
+  sabine: { roles: [sachbearbeiter] }
+  hans: { roles: [handwerker] }
+  hilde: { roles: [handwerker] }
+features:
+  b_mitte:
+    type: bezirk
+    properties:
+      name: Mitte
+      leitung: hans
+      geometrie: { type: Polygon, coordinates: [[[7.00, 50.70], [7.20, 50.70], [7.20, 50.80], [7.00, 50.80], [7.00, 50.70]]] }

@@ -1,0 +1,38 @@
+# Simulation profiles (WP-513): the real device adapters (fake-indexeddb store, run queue, sync worker) against
+# the real server adapters (SQLite, run and sync handlers), under seeded faults. Loaded by `profiles.ts`.
+#
+# `short` runs in `npm run check` (budget 30 s in all). `long` is `npm run sim`: 50 seeds of 20 devices x 500 runs.
+# `regressions` are seeds that once failed; they run in the short profile as well, with the long profile's shape
+# reduced to the short one. Add a seed here when `npm run sim` prints a reproduction for it.
+short:
+  seeds: 8
+  devices: 6
+  runsPerDevice: 40
+  faults: { drop: 0.15, duplicate: 0.15, maxDelay: 4 }
+  offlineFlip: 0.08
+  restart: 0.04
+  runRate: 0.5
+  adminRate: 0.05
+  batchRate: 0.08
+# `check` is what the specs run, one seed per test (each under about 1 s); `short` is the bench profile.
+check:
+  seeds: 8
+  devices: 3
+  runsPerDevice: 16
+  faults: { drop: 0.15, duplicate: 0.15, maxDelay: 4 }
+  offlineFlip: 0.08
+  restart: 0.04
+  runRate: 0.7
+  adminRate: 0.05
+  batchRate: 0.1
+long:
+  seeds: 50
+  devices: 20
+  runsPerDevice: 500
+  faults: { drop: 0.15, duplicate: 0.15, maxDelay: 4 }
+  offlineFlip: 0.08
+  restart: 0.02
+  runRate: 0.7
+  adminRate: 0.05
+  batchRate: 0.05
+regressions: []

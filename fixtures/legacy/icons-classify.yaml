@@ -1,0 +1,105 @@
+# Synthetic v3 export for WP-357: icon_config, marker_color, filter_value_icons and the filterable tag.
+# Shapes follow reference/src/lib/components/map/map-icons.ts (IconConfig) and tools/tag-types.ts.
+format: 1
+version: 0
+source: { name: Symbole, description: "" }
+settings: {}
+roles: [{ key: admin, record: { name: Admin } }]
+custom_tables: []
+map_layers: []
+info_pages: []
+workflows:
+  # stage mode: one icon per stage, a type icon with a non-default style
+  - key: baum
+    record:
+      name: Baum
+      geometry_type: point
+      marker_color: "#27ae60"
+      icon_config:
+        type: svg
+        svgContent: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg>'
+        style: { size: 24, color: "#16a34a", borderWidth: 2, borderColor: "#000000", backgroundColor: transparent, shadow: false, shape: pin }
+      filter_value_icons:
+        neu:
+          type: svg
+          svgContent: '<svg viewBox="0 0 24 24"><path d="M2 2h20v20H2z"/></svg>'
+          style: { size: 40, color: "#dc2626", borderWidth: 0, borderColor: transparent, backgroundColor: transparent, shadow: true, shape: none }
+        erledigt:
+          type: svg
+          svgContent: ""
+          style: { size: 32, color: "#000000", borderWidth: 0, borderColor: transparent, backgroundColor: transparent, shadow: false, shape: none }
+        geloescht:
+          type: svg
+          svgContent: '<svg viewBox="0 0 24 24"><path d="M1 1"/></svg>'
+          style: { size: 32, color: "#111111", borderWidth: 0, borderColor: transparent, backgroundColor: transparent, shadow: false, shape: none }
+    field_defs: []
+    document:
+      version: 0
+      stages: [{ key: neu, name: Neu, type: start }, { key: erledigt, name: Erledigt, type: end }]
+      edges: []
+      tasks: []
+    field_tags:
+      - tag_mappings:
+          - { tagType: filterable, fieldId: null, config: { filterBy: stage } }
+  # field mode; two filterable tags (the last wins); a stage key equal to an option label
+  - key: leitung
+    record:
+      name: Leitung
+      geometry_type: line
+      filter_value_icons:
+        Gut:
+          type: svg
+          svgContent: '<svg viewBox="0 0 24 24"><path d="M2 2h20v20H2z"/></svg>'
+          style: { size: 32, color: "#16a34a", borderWidth: 0, borderColor: transparent, backgroundColor: transparent, shadow: false, shape: none }
+        Alt:
+          type: svg
+          svgContent: '<svg viewBox="0 0 24 24"><path d="M2 2h20v20H2z"/></svg>'
+          style: { size: 32, color: "#6b7280", borderWidth: 0, borderColor: transparent, backgroundColor: transparent, shadow: false, shape: none }
+    field_defs:
+      - { key: zustand, record: { field_label: Zustand, field_type: dropdown, field_options: { options: [Gut, Schlecht] } } }
+    document:
+      version: 0
+      stages: [{ key: Gut, name: Gut, type: start }]
+      edges: []
+      tasks: []
+    field_tags:
+      - tag_mappings:
+          - { tagType: filterable, fieldId: null, config: { filterBy: stage } }
+          - { tagType: filterable, fieldId: "@field/zustand", config: { filterBy: field } }
+  # a multiple_choice field: no classify
+  - key: flaeche
+    record:
+      name: Fläche
+      geometry_type: polygon
+      marker_color: "#2e7d32"
+      filter_value_icons:
+        Pflege:
+          type: svg
+          svgContent: '<svg viewBox="0 0 24 24"><path d="M2 2h20v20H2z"/></svg>'
+          style: { size: 32, color: "#2e7d32", borderWidth: 0, borderColor: transparent, backgroundColor: transparent, shadow: false, shape: none }
+    field_defs:
+      - { key: massnahmen, record: { field_label: Maßnahmen, field_type: multiple_choice, field_options: { options: [Pflege, Schnitt] } } }
+    document:
+      version: 0
+      stages: [{ key: neu, name: Neu, type: start }]
+      edges: []
+      tasks: []
+    field_tags:
+      - tag_mappings:
+          - { tagType: filterable, fieldId: "@field/massnahmen", config: { filterBy: field } }
+  # an SVG that fails the check, and a short colour
+  - key: rohr
+    record:
+      name: Rohr
+      geometry_type: point
+      marker_color: "#abc"
+      icon_config:
+        type: svg
+        svgContent: '<svg viewBox="0 0 24 24"><script>alert(1)</script></svg>'
+        style: { size: 200, color: "#123456", borderWidth: 0, borderColor: transparent, backgroundColor: transparent, shadow: false, shape: none }
+    field_defs: []
+    document:
+      version: 0
+      stages: [{ key: neu, name: Neu, type: start }]
+      edges: []
+      tasks: []

@@ -1,0 +1,25 @@
+schema: ueberblick/1
+template: { key: gebaeude, version: 0.1.0 }
+types:
+  gebaeude:
+    label: Gebäude
+    geometry: umriss
+    properties:
+      umriss:
+        type: geometry
+        geometry_type: polygon
+        default:
+          {
+            type: Polygon,
+            coordinates: [[[13.4, 52.5, 34.0], [13.5, 52.5, 34.0], [13.5, 52.6, 35.5], [13.4, 52.5, 34.0]]],
+          }
+      eingang:
+        type: geometry
+        geometry_type: point
+        default: { type: Point, coordinates: [13.4, 52.5, 34.2] }
+      bauteil: { type: reference, to: gebaeude }
+views:
+  modell:
+    source: { type: gebaeude }
+    layers:
+      huelle: { renderer: maplibre-2d }

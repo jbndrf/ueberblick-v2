@@ -1,0 +1,3 @@
+{
+  "apps/web/e2e/participant/offline-start.spec.ts": "size-independent: asserts that the service worker serves the app files offline, not layout"
+}

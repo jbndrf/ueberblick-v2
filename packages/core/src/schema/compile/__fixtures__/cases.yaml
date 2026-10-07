@@ -1,0 +1,659 @@
+# Negative fixtures for compile(). Each case patches base.yaml (`set`: dot path -> new value) and
+# names the expected problem: its code and a path prefix. `warning: true` means it does not block.
+- name: task on an unknown type
+  code: dangling_reference
+  path: tasks.kontrolle.on
+  set: { tasks.kontrolle.on: baeume }
+- name: task on lists an unknown type
+  code: dangling_reference
+  path: tasks.kontrolle.on
+  set: { tasks.kontrolle.on: [baum, nix] }
+- name: reference property to an unknown type
+  code: dangling_reference
+  path: types.baum.properties.patin.to
+  set: { types.baum.properties.patin: { type: reference, to: person } }
+- name: relation to an unknown type
+  code: dangling_reference
+  path: types.baum.relations.flaeche.to
+  set: { types.baum.relations.flaeche.to: gebiet }
+- name: automatic action runs after an unknown task
+  code: dangling_reference
+  path: tasks.melden.auto.spielplatz_melden.after
+  set: { tasks.melden.auto.spielplatz_melden.after: nix }
+- name: automatic action runs after a task of another type
+  code: auto_after_other_type
+  path: tasks.kontrolle.auto.nach_flaeche.after
+  set:
+    tasks.flaeche_pruefen: { label: Fläche prüfen, on: flaeche }
+    tasks.kontrolle.auto.nach_flaeche: { after: flaeche_pruefen }
+- name: automatic action with two timings
+  code: auto_timing_conflict
+  path: tasks.kontrolle.auto.doppelt
+  set: { tasks.kontrolle.auto.doppelt: { after: melden, change: 'baum.stage' } }
+- name: automatic schedule without idle on a task offered on a type
+  code: auto_schedule_without_idle
+  path: tasks.kontrolle.auto.nachts.schedule
+  set: { tasks.kontrolle.auto.nachts: { schedule: '0 6 * * *' } }
+- name: automatic edge on a task that is not offered on a type
+  code: auto_edge_without_subject
+  path: tasks.melden.auto.beobachten.when
+  set: { tasks.melden.auto.beobachten: { when: 'true' } }
+- name: automatic action on a task with a required form field no then.set fills
+  code: auto_value_missing
+  path: tasks.abschliessen.form.faellig_am
+  set:
+    tasks.abschliessen.form: { faellig_am: { required: true } }
+    tasks.abschliessen.auto.taeglich: { when: "self.stage == 'massnahme'" }
+- name: who names a role the file does not declare
+  code: dangling_reference
+  path: tasks.kontrolle.who
+  set: { tasks.kontrolle.who: [nix] }
+- name: form field of a missing property
+  code: dangling_reference
+  path: tasks.kontrolle.form.hoehe
+  set: { tasks.kontrolle.form.hoehe: { required: true } }
+- name: then sets a missing property
+  code: dangling_reference
+  path: 'tasks.abschliessen.then["0"].set.stadium'
+  set: { tasks.abschliessen.then: [{ set: { stadium: "'erledigt'" } }] }
+- name: then sets an option the property lacks
+  code: dangling_reference
+  path: 'tasks.abschliessen.then["0"].set.stage'
+  set: { tasks.abschliessen.then: [{ set: { stage: "'geprueft'" } }] }
+- name: view of an unknown type
+  code: dangling_reference
+  path: views.karte.source.type
+  set: { views.karte.source.type: nix }
+- name: view sorts by a missing property
+  code: dangling_reference
+  path: views.meine_aufgaben.sort
+  set: { views.meine_aufgaben.sort: ['-nix'] }
+- name: role app home is not a view
+  code: dangling_reference
+  path: roles.bauhof.app.home
+  set: { roles.bauhof.app.home: nix }
+- name: role app shortcut is not a task
+  code: dangling_reference
+  path: roles.kontrolle.app.shortcuts
+  set: { roles.kontrolle.app.shortcuts: { nix: {} } }
+- name: permission names an unknown role
+  code: dangling_reference
+  path: types.baum.permissions.create
+  set: { types.baum.permissions.create: [gaertner] }
+- name: permission write names a missing property
+  code: dangling_reference
+  path: types.baum.permissions.write
+  set: { types.baum.permissions.write: { nix: [kontrolle] } }
+- name: default is not an option
+  code: dangling_reference
+  path: types.baum.properties.stage.default
+  set: { types.baum.properties.stage.default: nix }
+- name: lock names a missing path
+  code: dangling_reference
+  path: lock
+  set: { lock: [types.baum.properties.nix] }
+- name: when does not parse
+  code: expression_parse
+  path: tasks.kontrolle.when
+  set: { tasks.kontrolle.when: 'self.stage ==' }
+- name: relevant does not parse
+  code: expression_parse
+  path: tasks.kontrolle.form.foto.relevant
+  set: { tasks.kontrolle.form.foto.relevant: 'form.vitalitaet >=' }
+- name: when uses an unknown property
+  code: expression_type
+  path: tasks.kontrolle.when
+  set: { tasks.kontrolle.when: "self.stadium == 'x'" }
+- name: when is not a bool
+  code: expression_type
+  path: tasks.kontrolle.when
+  set: { tasks.kontrolle.when: 'self.befund' }
+- name: view filter compares different types
+  code: expression_type
+  path: views.meine_aufgaben.source.filter
+  set: { views.meine_aufgaben.source.filter: 'self.befund > 3' }
+- name: derive uses an unknown name
+  code: expression_type
+  path: types.baum.relations.flaeche.derive
+  set: { types.baum.relations.flaeche.derive: 'within(self.standort, nix.umriss)' }
+- name: automatic action when uses an unknown property
+  code: expression_type
+  path: tasks.melden.auto.spielplatz_melden.when
+  set: { tasks.melden.auto.spielplatz_melden.when: 'self.nix > 1' }
+- name: bind is not a feature
+  code: expression_type
+  path: tasks.kontrolle.bind.area
+  set: { tasks.kontrolle.bind.area: 'self.befund' }
+- name: input not declared
+  code: expression_type
+  path: 'tasks.kontrolle.then["3"].set.faellig_am'
+  set: { tasks.kontrolle.then.3.set.faellig_am: 'today() + months(inputs.nix)' }
+- name: then set expression has the wrong type
+  code: expression_type
+  path: 'tasks.kontrolle.then["3"].set.faellig_am'
+  set: { tasks.kontrolle.then.3.set.faellig_am: '1 + 1' }
+- name: option nothing sets
+  code: dead_option
+  path: types.baum.properties.stage.options.geprueft
+  warning: true
+  set: { types.baum.properties.stage.options.geprueft: Geprüft }
+- name: when can never be true, contradiction
+  code: never_available
+  path: tasks.abschliessen.when
+  warning: true
+  set: { tasks.abschliessen.when: "self.stage == 'massnahme' && self.stage == 'erfasst'" }
+- name: when compares with a non-option
+  code: never_available
+  path: tasks.abschliessen.when
+  warning: true
+  set: { tasks.abschliessen.when: "self.stage == 'geprueft'" }
+- name: when is the literal false
+  code: never_available
+  path: tasks.abschliessen.when
+  warning: true
+  set: { tasks.abschliessen.when: 'false' }
+- name: when needs a role that does not exist
+  code: never_available
+  path: tasks.kontrolle.when
+  warning: true
+  set: { tasks.kontrolle.when: "'gaertner' in actor.roles" }
+- name: automatic actions trigger each other unconditionally
+  code: rule_cycle
+  path: tasks.abschliessen.auto.hin
+  set:
+    tasks.abschliessen.auto.hin: { after: melden }
+    tasks.melden.auto.zurueck: { after: abschliessen }
+- name: automatic action triggers its own task
+  code: rule_cycle
+  path: tasks.melden.auto.selbst
+  set: { tasks.melden.auto.selbst: { after: melden } }
+- name: guarded cycle is only a warning
+  code: rule_cycle
+  path: tasks.abschliessen.auto.hin
+  warning: true
+  set:
+    tasks.abschliessen.auto.hin: { after: melden, when: "'kontrolle' in actor.roles" }
+    tasks.melden.auto.zurueck: { after: abschliessen }
+- name: feature type key is a reserved word
+  code: reserved_key
+  path: types.self
+  set: { types.self: { label: Selbst, properties: {} } }
+- name: property key is a reserved word
+  code: reserved_key
+  path: types.baum.properties.value
+  set: { types.baum.properties.value: { type: text } }
+- name: option key is a reserved word
+  code: reserved_key
+  path: types.baum.properties.stage.options.other
+  set: { types.baum.properties.stage.options.other: Keine }
+- name: task key is a reserved word
+  code: reserved_key
+  path: tasks.form
+  set: { tasks.form: { label: Karte, on: $none } }
+- name: role key is a reserved word
+  code: reserved_key
+  path: roles.actor
+  set: { roles.actor: { label: Alle } }
+- name: bind name is a reserved word
+  code: reserved_key
+  path: tasks.kontrolle.bind.actor
+  set: { tasks.kontrolle.bind.actor: self.flaeche }
+- name: automatic action key is a reserved word
+  code: reserved_key
+  path: tasks.melden.auto.in
+  set: { tasks.melden.auto.in: { after: kontrolle } }
+- name: view key is a reserved word
+  code: reserved_key
+  path: views.other
+  set: { views.other: { source: { type: baum } } }
+- name: tool key is a reserved word
+  code: reserved_key
+  path: tools.now
+  set: { tools.now: {} }
+- name: input key is a reserved word
+  code: reserved_key
+  path: inputs.null
+  set: { inputs.null: { type: integer } }
+- name: relation key is a reserved word
+  code: reserved_key
+  path: types.baum.relations.form
+  set: { types.baum.relations.form: { to: flaeche } }
+- name: layer key is a reserved word
+  code: reserved_key
+  path: views.karte.layers.true
+  set: { views.karte.layers.true: { renderer: maplibre-2d } }
+- name: input option key is a reserved word
+  code: reserved_key
+  path: inputs.modus.options.value
+  set: { inputs.modus: { type: select, options: { value: Alle, einzeln: Einzeln } } }
+- name: personal property with an index
+  code: personal_indexed
+  path: types.baum.properties.zustaendig.personal
+  warning: true
+  set: { types.baum.properties.zustaendig: { type: participant, index: true, personal: { subject: actor } } }
+- name: personal property carried by a view every role sees
+  code: personal_public
+  path: views.karte
+  warning: true
+  set: { types.baum.properties.befund: { type: text, personal: { subject: feature } } }
+- name: personal property omitted from a see map stays visible to everyone who sees the feature
+  code: personal_public
+  path: views.karte
+  warning: true
+  set:
+    types.baum.properties.befund: { type: text, personal: { subject: feature } }
+    types.baum.permissions: { see: { vitalitaet: [kontrolle] } }
+- name: personal property listed as $all inside a see map
+  code: personal_public
+  path: views.karte
+  warning: true
+  set:
+    types.baum.properties.befund: { type: text, personal: { subject: feature } }
+    types.baum.permissions: { see: { befund: $all } }
+- name: personal subject names a property that is not a participant property
+  code: dangling_reference
+  path: types.baum.properties.befund.personal.subject
+  set: { types.baum.properties.befund: { type: text, personal: { subject: 'property:faellig_am' } } }
+- name: derive has its spatial predicate under ||
+  code: derive_no_prefilter
+  path: types.baum.relations.flaeche.derive
+  set:
+    {
+      types.baum.relations.flaeche.derive: 'self.standort == other.umriss || within(self.standort, other.umriss)',
+    }
+- name: derive condition reads through a relation
+  code: derive_traverses_relation
+  path: types.baum.relations.flaeche.derive
+  set:
+    { types.baum.relations.flaeche.derive: "within(self.standort, other.umriss) && self.flaeche.name == 'x'" }
+- name: derive reads now
+  code: derive_uses_time
+  path: types.baum.relations.flaeche.derive
+  set: { types.baum.relations.flaeche.derive: 'within(self.standort, other.umriss) && now != null' }
+- name: visible_when uses a spatial predicate on stored geometries
+  code: visible_when_not_sql
+  path: types.baum.permissions.visible_when
+  warning: true
+  set:
+    types.baum.permissions: { see: $all, visible_when: 'within(self.standort, self.standort)' }
+- name: form field no role of the audience may write
+  code: task_field_not_writable
+  path: tasks.kontrolle.form.befund
+  warning: true
+  set: { types.baum.permissions.write: { vitalitaet: [kontrolle], foto: [kontrolle] } }
+- name: a role the who admits may not write a form field
+  code: task_role_cannot_write
+  path: tasks.kontrolle.form.befund
+  warning: true
+  set:
+    tasks.kontrolle.who: [kontrolle, bauhof]
+    types.baum.permissions.write: { vitalitaet: $all, befund: [kontrolle], foto: $all }
+- name: elapsed from does not parse
+  code: expression_parse
+  path: tasks.kontrolle.auto.faellig.elapsed.from
+  set: { tasks.kontrolle.auto.faellig: { elapsed: { from: 'self.faellig_am +' } } }
+- name: elapsed from is not a timestamp
+  code: expression_type
+  path: tasks.kontrolle.auto.faellig.elapsed.from
+  set: { tasks.kontrolle.auto.faellig: { elapsed: { from: 'self.befund' } } }
+- name: elapsed offset is not a duration
+  code: expression_type
+  path: tasks.kontrolle.auto.faellig.elapsed.offset
+  set: { tasks.kontrolle.auto.faellig: { elapsed: { from: 'self.faellig_am', offset: '14' } } }
+- name: elapsed after is not a duration
+  code: expression_type
+  path: tasks.kontrolle.auto.faellig.elapsed.after
+  set: { tasks.kontrolle.auto.faellig: { elapsed: { from: 'self.faellig_am', after: "'x'" } } }
+- name: elapsed from reads an unknown property
+  code: expression_type
+  path: tasks.kontrolle.auto.faellig.elapsed.from
+  set: { tasks.kontrolle.auto.faellig: { elapsed: { from: 'self.nix' } } }
+- name: schedule value is out of range
+  code: expression_parse
+  path: tasks.kontrolle.auto.faellig.schedule
+  set: { tasks.kontrolle.auto.faellig: { schedule: '61 6 * * *', idle: 'days(1)' } }
+- name: layer style $ref the bundle does not hold
+  code: asset_unresolved
+  path: views.karte.layers.baeume.style
+  set: { views.karte.layers.baeume.style: { $ref: styles/nope.json } }
+- name: layer style without layer ids
+  code: style_invalid
+  path: views.karte.layers.baeume.style
+  set: { views.karte.layers.baeume.style: { layers: [{ type: circle }] } }
+- name: search source is not type.property
+  code: tool_source_invalid
+  path: tools.search.sources
+  set: { tools.search: { sources: [address] } }
+- name: tool setting does not fit the tool schema
+  code: tool_setting_invalid
+  path: tools.photo["maxEdge"]
+  set: { tools.photo: { maxEdge: 5 } }
+- name: personal property and no task with a redact step
+  code: personal_without_redact
+  path: types.baum.properties.befund.personal
+  warning: true
+  set: { types.baum.properties.befund: { type: text, personal: { subject: feature } } }
+- name: process names a property that does not exist
+  code: process_property_invalid
+  path: types.baum.process.property
+  set: { types.baum.process: { property: nix, start: erfasst, end: [erledigt] } }
+- name: process names a property that is not a select
+  code: process_property_invalid
+  path: types.baum.process.property
+  set: { types.baum.process: { property: befund, start: erfasst, end: [erledigt] } }
+- name: process start is not an option
+  code: process_stage_unknown
+  path: types.baum.process.start
+  set: { types.baum.process: { property: stage, start: nix, end: [erledigt] } }
+- name: process end value is not an option
+  code: process_stage_unknown
+  path: 'types.baum.process.end["1"]'
+  set: { types.baum.process: { property: stage, start: erfasst, end: [erledigt, nix] } }
+- name: process end is empty
+  code: process_end_invalid
+  path: types.baum.process.end
+  set: { types.baum.process: { property: stage, start: erfasst, end: [] } }
+- name: process end contains the start
+  code: process_end_invalid
+  path: types.baum.process.end
+  set: { types.baum.process: { property: stage, start: erfasst, end: [erfasst, erledigt] } }
+- name: process property has a default
+  code: process_property_default
+  path: types.baum.properties.stage.default
+  set: { types.baum.properties.stage.default: erfasst }
+- name: a task form field writes the process property
+  code: process_property_written
+  path: tasks.kontrolle.form.stage
+  set: { tasks.kontrolle.form.stage: {} }
+- name: a location step names a property that is no geometry
+  code: task_step_property_invalid
+  path: tasks.kontrolle.steps
+  set:
+    tasks.kontrolle.steps:
+      - { kind: form }
+      - { kind: location, property: faellig_am }
+- name: computed properties read each other
+  code: computed_cycle
+  path: types.baum.properties.notiz_a.computed
+  set:
+    types.baum.properties.notiz_a: { type: text, computed: self.notiz_b }
+    types.baum.properties.notiz_b: { type: text, computed: self.notiz_a }
+- name: a computed property has a default
+  code: computed_default
+  path: types.baum.properties.notiz.default
+  set: { types.baum.properties.notiz: { type: text, computed: "'x'", default: a } }
+- name: a computed expression reads the actor
+  code: computed_input_unsupported
+  path: types.baum.properties.notiz.computed
+  set: { types.baum.properties.notiz: { type: text, computed: actor.id } }
+- name: a then.set through a bound feature writes a computed property
+  code: computed_written
+  path: 'tasks.kontrolle.then["0"].set["b.notiz"]'
+  set:
+    types.baum.properties.notiz: { type: text, computed: "'x'" }
+    tasks.kontrolle.bind: { b: self }
+    tasks.kontrolle.then: [{ set: { b.notiz: "'y'" } }]
+- name: pack lists an unknown layer
+  code: pack_unknown_layer
+  path: map.packs.stadt.layers
+  set:
+    {
+      map:
+        {
+          layers:
+            {
+              osm: { label: X, kind: base, source: { type: preset, preset: osm } },
+              luft:
+                { label: Y, kind: overlay, source: { type: pmtiles, url: 'https://x.example/a.pmtiles' } },
+            },
+          packs:
+            {
+              stadt:
+                {
+                  label: S,
+                  bounds: [7.08, 50.70, 7.14, 50.75],
+                  min_zoom: 12,
+                  max_zoom: 16,
+                  layers: [nix],
+                  roles: [kontrolle],
+                },
+            },
+        },
+    }
+- name: pack lists a layer that cannot be packed
+  code: pack_layer_not_packable
+  path: map.packs.stadt.layers
+  set:
+    {
+      map:
+        {
+          layers:
+            {
+              osm: { label: X, kind: base, source: { type: wms, url: 'https://w.example/wms', layers: a } },
+              luft:
+                { label: Y, kind: overlay, source: { type: pmtiles, url: 'https://x.example/a.pmtiles' } },
+            },
+          packs:
+            {
+              stadt:
+                {
+                  label: S,
+                  bounds: [7.08, 50.70, 7.14, 50.75],
+                  min_zoom: 12,
+                  max_zoom: 16,
+                  layers: [osm],
+                  roles: [kontrolle],
+                },
+            },
+        },
+    }
+- name: pack zoom range is reversed
+  code: pack_zoom_range
+  path: map.packs.stadt
+  set:
+    {
+      map:
+        {
+          layers:
+            {
+              osm: { label: X, kind: base, source: { type: preset, preset: osm } },
+              luft:
+                { label: Y, kind: overlay, source: { type: pmtiles, url: 'https://x.example/a.pmtiles' } },
+            },
+          packs:
+            {
+              stadt:
+                {
+                  label: S,
+                  bounds: [7.08, 50.70, 7.14, 50.75],
+                  min_zoom: 17,
+                  max_zoom: 16,
+                  layers: [luft],
+                  roles: [kontrolle],
+                },
+            },
+        },
+    }
+- name: pack zoom is above the limit
+  code: pack_zoom_range
+  path: map.packs.stadt
+  set:
+    {
+      map:
+        {
+          layers:
+            {
+              osm: { label: X, kind: base, source: { type: preset, preset: osm } },
+              luft:
+                { label: Y, kind: overlay, source: { type: pmtiles, url: 'https://x.example/a.pmtiles' } },
+            },
+          packs:
+            {
+              stadt:
+                {
+                  label: S,
+                  bounds: [7.08, 50.70, 7.14, 50.75],
+                  min_zoom: 12,
+                  max_zoom: 23,
+                  layers: [luft],
+                  roles: [kontrolle],
+                },
+            },
+        },
+    }
+- name: pack bounds are reversed
+  code: pack_bounds
+  path: map.packs.stadt.bounds
+  set:
+    {
+      map:
+        {
+          layers:
+            {
+              osm: { label: X, kind: base, source: { type: preset, preset: osm } },
+              luft:
+                { label: Y, kind: overlay, source: { type: pmtiles, url: 'https://x.example/a.pmtiles' } },
+            },
+          packs:
+            {
+              stadt:
+                {
+                  label: S,
+                  bounds: [7.14, 50.70, 7.08, 50.75],
+                  min_zoom: 12,
+                  max_zoom: 16,
+                  layers: [luft],
+                  roles: [kontrolle],
+                },
+            },
+        },
+    }
+- name: pack bounds leave WGS84
+  code: pack_bounds
+  path: map.packs.stadt.bounds
+  set:
+    {
+      map:
+        {
+          layers:
+            {
+              osm: { label: X, kind: base, source: { type: preset, preset: osm } },
+              luft:
+                { label: Y, kind: overlay, source: { type: pmtiles, url: 'https://x.example/a.pmtiles' } },
+            },
+          packs:
+            {
+              stadt:
+                {
+                  label: S,
+                  bounds: [7.08, 50.70, 7.14, 95],
+                  min_zoom: 12,
+                  max_zoom: 16,
+                  layers: [luft],
+                  roles: [kontrolle],
+                },
+            },
+        },
+    }
+- name: pack is above the tile limit
+  code: pack_too_large
+  path: map.packs.stadt
+  set:
+    {
+      map:
+        {
+          layers:
+            {
+              osm: { label: X, kind: base, source: { type: preset, preset: osm } },
+              luft:
+                { label: Y, kind: overlay, source: { type: pmtiles, url: 'https://x.example/a.pmtiles' } },
+            },
+          packs:
+            {
+              stadt:
+                {
+                  label: S,
+                  bounds: [5, 47, 15, 55],
+                  min_zoom: 12,
+                  max_zoom: 18,
+                  layers: [luft],
+                  roles: [kontrolle],
+                },
+            },
+        },
+    }
+- name: pack names an unknown role
+  code: pack_unknown_role
+  path: map.packs.stadt.roles
+  set:
+    {
+      map:
+        {
+          layers:
+            {
+              osm: { label: X, kind: base, source: { type: preset, preset: osm } },
+              luft:
+                { label: Y, kind: overlay, source: { type: pmtiles, url: 'https://x.example/a.pmtiles' } },
+            },
+          packs:
+            {
+              stadt:
+                {
+                  label: S,
+                  bounds: [7.08, 50.70, 7.14, 50.75],
+                  min_zoom: 12,
+                  max_zoom: 16,
+                  layers: [luft],
+                  roles: [nix],
+                },
+            },
+        },
+    }
+- name: classify names a property that is not a select
+  code: classify_property_invalid
+  path: types.baum.classify.property
+  set: { types.baum.classify: { property: befund, values: {} } }
+- name: classify value is not an option
+  code: classify_value_unknown
+  path: types.baum.classify.values.nix
+  set: { types.baum.classify: { property: stage, values: { nix: { color: '#ff0000' } } } }
+- name: marker icon svg holds a script
+  code: marker_icon_invalid
+  path: types.baum.marker.icon.svg
+  set: { types.baum.marker: { icon: { svg: '<svg><script>x</script></svg>' } } }
+- name: children drawn at the parent but the child type has a geometry of its own
+  code: inherit_with_own_geometry
+  path: types.baum.relations.massnahmen.inherit_position
+  set:
+    types.massnahme:
+      label: Maßnahme
+      geometry: ort
+      properties:
+        ort: { type: geometry, geometry_type: point }
+        baum: { type: reference, to: baum }
+    types.baum.relations.massnahmen: { to: massnahme, inverse_of: massnahme.baum, inherit_position: true }
+- name: choice_filter on a property that is not a select
+  code: choice_filter_invalid
+  path: tasks.kontrolle.form.befund.choice_filter
+  set: { tasks.kontrolle.form.befund.choice_filter: "option == 'a'" }
+- name: values_at_start names a value that is not an option
+  code: start_value_unknown
+  path: types.baum.values_at_start["0"]
+  set: { types.baum.values_at_start: [nix] }
+- name: values_at_start on a type with no classifying property
+  code: start_values_without_property
+  path: types.flaeche.values_at_start
+  set: { types.flaeche.values_at_start: [a] }
+- name: edge when is not a bool
+  code: expression_type
+  path: tasks.kontrolle.auto.ueberfaellig.when
+  set: { tasks.kontrolle.auto.ueberfaellig: { when: 'self.befund' } }
+- name: edge when reads the clock
+  code: when_trigger_uses_time
+  path: tasks.kontrolle.auto.ueberfaellig.when
+  warning: true
+  set: { tasks.kontrolle.auto.ueberfaellig: { when: 'self.faellig_am < today()' } }
+- name: participant select names a role the file does not declare
+  code: select_unknown_role
+  path: types.baum.properties.zustaendig.select.all["0"]
+  set: { types.baum.properties.zustaendig: { type: participant, select: { all: [nix] } } }

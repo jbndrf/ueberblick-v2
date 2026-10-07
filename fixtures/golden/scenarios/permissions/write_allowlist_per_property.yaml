@@ -1,0 +1,49 @@
+scenario: write_allowlist_per_property
+title: "Each property has its own write allowlist; a run touching a forbidden property is refused whole"
+foundations: [F3, F6]
+capabilities: [permission_write]
+given:
+  project: projects/musterstadt-plain.yaml
+  include: [seeds/musterstadt-geo.yaml]
+  now: "2026-05-01T08:00:00Z"
+when:
+  - id: s1                                # bauhof no longer sees the task (WP-410: its `when` named a role that may not write befund)
+    kind: run
+    task: befund_ergaenzen
+    actor: bernd
+    feature: t_in
+    input: { befund: Bauhof-Notiz }
+  - id: s2                                # the inspector may
+    kind: run
+    task: befund_ergaenzen
+    actor: anna
+    feature: t_in
+    input: { befund: Kontrolleur-Notiz }
+  - id: s3                                # verwaltung may write zustaendig; bauhof may not run the task at all
+    kind: run
+    task: zuweisen
+    actor: bernd
+    feature: t_in
+    input: { zustaendig: bernd }
+  - id: s4
+    kind: run
+    task: zuweisen
+    actor: vera
+    feature: t_in
+    input: { zustaendig: bernd }
+  - id: s5                                # system runs (rules) are exempt from write allowlists, not from the task's when
+    kind: run
+    task: system_faellig
+    auto: system_faellig.kontrolle_wird_faellig
+    actor: { kind: system, id: system }
+    feature: t_in
+    input: {}
+then:
+  steps:
+    s1: { outcome: refused, refusal: not_permitted, no_trace: true }
+    s2: { outcome: accepted, observations: [{ feature: t_in, property: befund, result: Kontrolleur-Notiz }] }
+    s3: { outcome: refused, refusal: not_permitted, no_trace: true }
+    s4: { outcome: accepted, observations: [{ feature: t_in, property: zustaendig, result: bernd }] }
+    s5: { outcome: accepted, observations: [{ feature: t_in, property: kontrolle_faellig, result: true }] }
+  features:
+    t_in: { properties: { befund: Kontrolleur-Notiz, zustaendig: bernd, kontrolle_faellig: true } }

@@ -1,0 +1,2806 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "anyOf": [
+    {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "string",
+          "enum": [
+            "ueberblick/1"
+          ],
+          "description": "The platform schema version. First line of the file."
+        },
+        "template": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*$",
+              "description": "The template key."
+            },
+            "version": {
+              "type": "string",
+              "pattern": "^\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z.-]+)?$",
+              "description": "A semantic version (major.minor.patch)."
+            },
+            "label": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string",
+                    "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$"
+                  },
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              ],
+              "description": "A label: a plain string, or an object keyed by language tag ({ de: \"Baum\", en: \"Tree\" })."
+            }
+          },
+          "required": [
+            "key",
+            "version"
+          ],
+          "additionalProperties": false,
+          "description": "Identity of this template version."
+        },
+        "inputs": {
+          "description": "Intended customisation points; overlays set values.",
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "text",
+                  "localized_text",
+                  "number",
+                  "integer",
+                  "boolean",
+                  "date",
+                  "datetime",
+                  "time",
+                  "select",
+                  "multiselect",
+                  "geometry",
+                  "participant",
+                  "role",
+                  "reference",
+                  "file"
+                ],
+                "description": "The property type, from the property type registry."
+              },
+              "label": {
+                "description": "The name shown to participants.",
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$"
+                    },
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  }
+                ]
+              },
+              "description": {
+                "description": "Help text shown next to the property.",
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$"
+                    },
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  }
+                ]
+              },
+              "required": {
+                "description": "Whether a value must exist once the feature is created.",
+                "type": "boolean"
+              },
+              "default": {
+                "description": "The value a new feature starts with.",
+                "$ref": "#/$defs/__schema0"
+              },
+              "computed": {
+                "description": "Berechnet: a rule-language expression over `self`. Plan keeps the value up to date, on the device and on the server, whenever an input changes; nobody writes it.",
+                "type": "string",
+                "minLength": 1
+              },
+              "display": {
+                "description": "How the read view (Daten) shows the property.",
+                "type": "object",
+                "properties": {
+                  "tab": {
+                    "description": "The Daten sub-tab the property sits on. Absent: the default tab (\"Daten\").",
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      {
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string",
+                          "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$"
+                        },
+                        "additionalProperties": {
+                          "type": "string"
+                        }
+                      }
+                    ]
+                  },
+                  "tab_order": {
+                    "description": "Where the sub-tab sorts: the smallest value among its properties counts. Default 0; the default tab is first.",
+                    "type": "number"
+                  },
+                  "row": {
+                    "description": "The row inside the sub-tab, ascending (v3 row index). Properties with the same row share a line; ones without a row follow in type order, one per line.",
+                    "type": "number"
+                  },
+                  "column": {
+                    "description": "full (default), left or right: two half-width cells of one row sit side by side, also on a phone. Within a row left comes before right before full.",
+                    "type": "string",
+                    "enum": [
+                      "full",
+                      "left",
+                      "right"
+                    ]
+                  },
+                  "hidden": {
+                    "description": "Never shown in Daten (the value still exists and can be used).",
+                    "type": "boolean"
+                  },
+                  "condition": {
+                    "description": "A rule-language condition over `self` and `actor`: the property shows in Daten only while it is true.",
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "history": {
+                    "description": "How the history count reads: measurements (\"n Messungen\") or changes (\"n Änderungen\", default).",
+                    "type": "string",
+                    "enum": [
+                      "changes",
+                      "measurements"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              },
+              "index": {
+                "description": "Ask for a database index so filters and sorts on it stay fast.",
+                "type": "boolean"
+              },
+              "personal": {
+                "description": "Marks the property as personal data and names whose it is (erasure and export use it).",
+                "type": "object",
+                "properties": {
+                  "subject": {
+                    "type": "string",
+                    "description": "Whose data this is: actor, feature, or property:<key> naming a participant property."
+                  }
+                },
+                "required": [
+                  "subject"
+                ],
+                "additionalProperties": false
+              },
+              "options": {
+                "description": "select/multiselect: option key to label.",
+                "type": "object",
+                "propertyNames": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$",
+                  "description": "The stored value of one option of a select property. Letter first, e.g. v3 for the label 3."
+                },
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string",
+                        "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$"
+                      },
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    }
+                  ],
+                  "description": "A label: a plain string, or an object keyed by language tag ({ de: \"Baum\", en: \"Tree\" })."
+                }
+              },
+              "option_hints": {
+                "description": "select/multiselect: option key to the explanation text shown under the option (v3 \"Antwort, Erklärungstext\").",
+                "type": "object",
+                "propertyNames": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$",
+                  "description": "The stored value of one option of a select property. Letter first, e.g. v3 for the label 3."
+                },
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string",
+                        "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$"
+                      },
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    }
+                  ],
+                  "description": "A label: a plain string, or an object keyed by language tag ({ de: \"Baum\", en: \"Tree\" })."
+                }
+              },
+              "to": {
+                "description": "reference: the feature type key that is referenced.",
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              },
+              "accept": {
+                "description": "file: accepted MIME types (image/*, application/pdf) or extensions (.pdf); absent means any.",
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^([a-z0-9][a-z0-9.+-]*\\/([a-z0-9][a-z0-9.+-]*|\\*)|\\.[a-z0-9]+)$"
+                }
+              },
+              "max_files": {
+                "description": "file: most files the value may hold (default 10).",
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "select": {
+                "type": "object",
+                "properties": {
+                  "all": {
+                    "description": "Roles that may choose any participant (or role) of the project, by name.",
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$",
+                      "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+                    }
+                  },
+                  "self": {
+                    "description": "Roles that may choose only themselves.",
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$",
+                      "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+                    }
+                  }
+                },
+                "additionalProperties": false,
+                "description": "participant/role: who may choose whom (v3 any_select_roles / self_select_roles)."
+              },
+              "cardinality": {
+                "description": "reference/participant/role: one (default, a single id) or many (\"Mehrfachauswahl\": a list of ids).",
+                "type": "string",
+                "enum": [
+                  "one",
+                  "many"
+                ]
+              },
+              "display_property": {
+                "description": "reference: a property of the target type whose value names the target in pickers and cells (\"Anzeigefeld\"). Absent: the display name (B-014).",
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              },
+              "min": {
+                "description": "number/integer: smallest allowed value.",
+                "type": "number"
+              },
+              "max": {
+                "description": "number/integer: largest allowed value.",
+                "type": "number"
+              },
+              "geometry_type": {
+                "description": "geometry: the geometry kind, from the registry; absent means any.",
+                "type": "string",
+                "enum": [
+                  "point",
+                  "multipoint",
+                  "linestring",
+                  "multilinestring",
+                  "polygon",
+                  "multipolygon",
+                  "any"
+                ]
+              }
+            },
+            "required": [
+              "type"
+            ],
+            "additionalProperties": false,
+            "description": "A property: a value on a feature, addressed by key."
+          }
+        },
+        "lock": {
+          "description": "Key paths that an overlay may not touch.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(?:[a-z][a-z0-9_]*|\\[\"(?:[^\"\\\\]|\\\\.)*\"\\])(?:\\.[a-z][a-z0-9_]*|\\[\"(?:[^\"\\\\]|\\\\.)*\"\\])*$",
+            "description": "A path into the project file, e.g. types.baum.properties.vitalitaet or style[\"circle-color\"] (segments that are not keys are bracketed JSON strings)."
+          }
+        },
+        "roles": {
+          "description": "Roles by key.",
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$"
+                    },
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "The name of the role."
+              },
+              "description": {
+                "description": "What the role is for, one short line (shown on the Rollen page).",
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$"
+                    },
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  }
+                ]
+              },
+              "app": {
+                "type": "object",
+                "properties": {
+                  "home": {
+                    "description": "Key of the default view.",
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  },
+                  "views": {
+                    "description": "The views this role sees: view key to per-role settings ({}). Order is authored order.",
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$",
+                      "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+                    },
+                    "additionalProperties": {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    }
+                  },
+                  "tools": {
+                    "description": "The tools this role has: tool key to availability (offered or active) and role settings.",
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$",
+                      "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+                    },
+                    "additionalProperties": {
+                      "type": "object",
+                      "properties": {
+                        "availability": {
+                          "description": "offered: off at first, the person may switch it on. active (default): on at first.",
+                          "type": "string",
+                          "enum": [
+                            "offered",
+                            "active"
+                          ]
+                        },
+                        "settings": {
+                          "description": "Settings of this tool for this role; the tool checks them.",
+                          "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
+                          "additionalProperties": {
+                            "$ref": "#/$defs/__schema0"
+                          }
+                        }
+                      },
+                      "additionalProperties": false,
+                      "description": "One tool of a role app."
+                    }
+                  },
+                  "shortcuts": {
+                    "description": "Tasks pinned for one-tap access: task key to per-role settings ({}).",
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$",
+                      "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+                    },
+                    "additionalProperties": {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    }
+                  },
+                  "presets": {
+                    "description": "Named preset values, e.g. default property values.",
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$",
+                      "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+                    },
+                    "additionalProperties": {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    }
+                  },
+                  "filter_presets": {
+                    "description": "Filters this role finds ready in the filter sheet: preset key to label and one filter per type.",
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$",
+                      "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+                    },
+                    "additionalProperties": {
+                      "type": "object",
+                      "properties": {
+                        "label": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            {
+                              "type": "object",
+                              "propertyNames": {
+                                "type": "string",
+                                "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$"
+                              },
+                              "additionalProperties": {
+                                "type": "string"
+                              }
+                            }
+                          ],
+                          "description": "The name shown in the filter sheet."
+                        },
+                        "filters": {
+                          "type": "object",
+                          "propertyNames": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_]*$",
+                            "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+                          },
+                          "additionalProperties": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "An expression in the rule language (a CEL subset). Type-checked by compile()."
+                          },
+                          "description": "Feature type key to a rule-language expression over `self`; always clipped by permissions."
+                        }
+                      },
+                      "required": [
+                        "label",
+                        "filters"
+                      ],
+                      "additionalProperties": false,
+                      "description": "A filter preset: one filter per feature type, offered to a role."
+                    }
+                  },
+                  "ui": {
+                    "description": "UI options such as theme; the keys belong to the app.",
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {
+                      "$ref": "#/$defs/__schema0"
+                    }
+                  },
+                  "activity_names": {
+                    "description": "Whether this role sees who made each change in the activity timeline. Default true. When false, the device gets no actor id and no name for other people's runs.",
+                    "type": "boolean"
+                  }
+                },
+                "additionalProperties": false,
+                "description": "What the app looks like for one role."
+              },
+              "quota": {
+                "description": "The most features a participant with this role may create (all types together; deleting one frees a place). With several roles the highest quota counts. Absent: no limit.",
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "label"
+            ],
+            "additionalProperties": false,
+            "description": "A role: a permission group within a project, with an optional app profile."
+          }
+        },
+        "types": {
+          "description": "Feature types by key.",
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$"
+                    },
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "The name of the feature type shown to participants."
+              },
+              "description": {
+                "description": "What this feature type is for.",
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$"
+                    },
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  }
+                ]
+              },
+              "geometry": {
+                "description": "The key of the primary geometry property (type geometry); absent means features have no map geometry. The primary geometry is the map geometry of the feature (stored geometry, anchor, area); the spatial index covers every geometry property.",
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              },
+              "properties": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$",
+                  "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+                },
+                "additionalProperties": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "text",
+                        "localized_text",
+                        "number",
+                        "integer",
+                        "boolean",
+                        "date",
+                        "datetime",
+                        "time",
+                        "select",
+                        "multiselect",
+                        "geometry",
+                        "participant",
+                        "role",
+                        "reference",
+                        "file"
+                      ],
+                      "description": "The property type, from the property type registry."
+                    },
+                    "label": {
+                      "description": "The name shown to participants.",
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "object",
+                          "propertyNames": {
+                            "type": "string",
+                            "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$"
+                          },
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        }
+                      ]
+                    },
+                    "description": {
+                      "description": "Help text shown next to the property.",
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "object",
+                          "propertyNames": {
+                            "type": "string",
+                            "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$"
+                          },
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        }
+                      ]
+                    },
+                    "required": {
+                      "description": "Whether a value must exist once the feature is created.",
+                      "type": "boolean"
+                    },
+                    "default": {
+                      "description": "The value a new feature starts with.",
+                      "$ref": "#/$defs/__schema0"
+                    },
+                    "computed": {
+                      "description": "Berechnet: a rule-language expression over `self`. Plan keeps the value up to date, on the device and on the server, whenever an input changes; nobody writes it.",
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "display": {
+                      "description": "How the read view (Daten) shows the property.",
+                      "type": "object",
+                      "properties": {
+                        "tab": {
+                          "description": "The Daten sub-tab the property sits on. Absent: the default tab (\"Daten\").",
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            {
+                              "type": "object",
+                              "propertyNames": {
+                                "type": "string",
+                                "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$"
+                              },
+                              "additionalProperties": {
+                                "type": "string"
+                              }
+                            }
+                          ]
+                        },
+                        "tab_order": {
+                          "description": "Where the sub-tab sorts: the smallest value among its properties counts. Default 0; the default tab is first.",
+                          "type": "number"
+                        },
+                        "row": {
+                          "description": "The row inside the sub-tab, ascending (v3 row index). Properties with the same row share a line; ones without a row follow in type order, one per line.",
+                          "type": "number"
+                        },
+                        "column": {
+                          "description": "full (default), left or right: two half-width cells of one row sit side by side, also on a phone. Within a row left comes before right before full.",
+                          "type": "string",
+                          "enum": [
+                            "full",
+                            "left",
+                            "right"
+                          ]
+                        },
+                        "hidden": {
+                          "description": "Never shown in Daten (the value still exists and can be used).",
+                          "type": "boolean"
+                        },
+                        "condition": {
+                          "description": "A rule-language condition over `self` and `actor`: the property shows in Daten only while it is true.",
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "history": {
+                          "description": "How the history count reads: measurements (\"n Messungen\") or changes (\"n Änderungen\", default).",
+                          "type": "string",
+                          "enum": [
+                            "changes",
+                            "measurements"
+                          ]
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "index": {
+                      "description": "Ask for a database index so filters and sorts on it stay fast.",
+                      "type": "boolean"
+                    },
+                    "personal": {
+                      "description": "Marks the property as personal data and names whose it is (erasure and export use it).",
+                      "type": "object",
+                      "properties": {
+                        "subject": {
+                          "type": "string",
+                          "description": "Whose data this is: actor, feature, or property:<key> naming a participant property."
+                        }
+                      },
+                      "required": [
+                        "subject"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "options": {
+                      "description": "select/multiselect: option key to label.",
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]*$",
+                        "description": "The stored value of one option of a select property. Letter first, e.g. v3 for the label 3."
+                      },
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          {
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string",
+                              "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$"
+                            },
+                            "additionalProperties": {
+                              "type": "string"
+                            }
+                          }
+                        ],
+                        "description": "A label: a plain string, or an object keyed by language tag ({ de: \"Baum\", en: \"Tree\" })."
+                      }
+                    },
+                    "option_hints": {
+                      "description": "select/multiselect: option key to the explanation text shown under the option (v3 \"Antwort, Erklärungstext\").",
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]*$",
+                        "description": "The stored value of one option of a select property. Letter first, e.g. v3 for the label 3."
+                      },
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          {
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string",
+                              "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$"
+                            },
+                            "additionalProperties": {
+                              "type": "string"
+                            }
+                          }
+                        ],
+                        "description": "A label: a plain string, or an object keyed by language tag ({ de: \"Baum\", en: \"Tree\" })."
+                      }
+                    },
+                    "to": {
+                      "description": "reference: the feature type key that is referenced.",
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$"
+                    },
+                    "accept": {
+                      "description": "file: accepted MIME types (image/*, application/pdf) or extensions (.pdf); absent means any.",
+                      "minItems": 1,
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "pattern": "^([a-z0-9][a-z0-9.+-]*\\/([a-z0-9][a-z0-9.+-]*|\\*)|\\.[a-z0-9]+)$"
+                      }
+                    },
+                    "max_files": {
+                      "description": "file: most files the value may hold (default 10).",
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 9007199254740991
+                    },
+                    "select": {
+                      "type": "object",
+                      "properties": {
+                        "all": {
+                          "description": "Roles that may choose any participant (or role) of the project, by name.",
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_]*$",
+                            "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+                          }
+                        },
+                        "self": {
+                          "description": "Roles that may choose only themselves.",
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_]*$",
+                            "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+                          }
+                        }
+                      },
+                      "additionalProperties": false,
+                      "description": "participant/role: who may choose whom (v3 any_select_roles / self_select_roles)."
+                    },
+                    "cardinality": {
+                      "description": "reference/participant/role: one (default, a single id) or many (\"Mehrfachauswahl\": a list of ids).",
+                      "type": "string",
+                      "enum": [
+                        "one",
+                        "many"
+                      ]
+                    },
+                    "display_property": {
+                      "description": "reference: a property of the target type whose value names the target in pickers and cells (\"Anzeigefeld\"). Absent: the display name (B-014).",
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$"
+                    },
+                    "min": {
+                      "description": "number/integer: smallest allowed value.",
+                      "type": "number"
+                    },
+                    "max": {
+                      "description": "number/integer: largest allowed value.",
+                      "type": "number"
+                    },
+                    "geometry_type": {
+                      "description": "geometry: the geometry kind, from the registry; absent means any.",
+                      "type": "string",
+                      "enum": [
+                        "point",
+                        "multipoint",
+                        "linestring",
+                        "multilinestring",
+                        "polygon",
+                        "multipolygon",
+                        "any"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "type"
+                  ],
+                  "additionalProperties": false,
+                  "description": "A property: a value on a feature, addressed by key."
+                },
+                "description": "Properties by key. Stage, geometry and assignee are properties too."
+              },
+              "relations": {
+                "description": "Relations to other feature types, by key.",
+                "type": "object",
+                "propertyNames": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$",
+                  "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+                },
+                "additionalProperties": {
+                  "type": "object",
+                  "properties": {
+                    "to": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$",
+                      "description": "The feature type key on the other side."
+                    },
+                    "label": {
+                      "description": "How the feature sheet names this relation (e.g. \"Fläche\"). Absent: the relation key is shown.",
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "object",
+                          "propertyNames": {
+                            "type": "string",
+                            "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$"
+                          },
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        }
+                      ]
+                    },
+                    "derive": {
+                      "description": "A rule-language expression that computes the edges; absent means a picked reference.",
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "inverse_of": {
+                      "description": "A read-only reverse set of a reference or relation on `to`, written <type>.<key>. No edge is stored twice.",
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*\\.[a-z][a-z0-9_]*$"
+                    },
+                    "inherit_position": {
+                      "description": "On an inverse_of relation: the children have no position of their own and are drawn at their parent (B-019). The child type then has no primary geometry.",
+                      "type": "boolean"
+                    },
+                    "cardinality": {
+                      "description": "one or many. Default: one for a picked reference, many for derive and inverse_of.",
+                      "type": "string",
+                      "enum": [
+                        "one",
+                        "many"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "to"
+                  ],
+                  "additionalProperties": false,
+                  "description": "A relation to another feature type: a reference (picked), derived (computed) or an inverse."
+                }
+              },
+              "process": {
+                "type": "object",
+                "properties": {
+                  "property": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "description": "The key of the `select` property that holds the stage."
+                  },
+                  "start": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "description": "The option a new feature of this type starts in (replaces a `default` on the property)."
+                  },
+                  "end": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$",
+                      "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+                    },
+                    "description": "The options that end the process (at least one, never the start)."
+                  }
+                },
+                "required": [
+                  "property",
+                  "start",
+                  "end"
+                ],
+                "additionalProperties": false,
+                "description": "The process of the feature type: a stage property with a start and end stages. Only `then.set` steps write the stage."
+              },
+              "marker": {
+                "description": "The type's own look on the map: the fallback for a value with none (v3 icon_config and marker_color).",
+                "type": "object",
+                "properties": {
+                  "color": {
+                    "description": "The colour of the marker, of the dot, and of a line or polygon.",
+                    "type": "string",
+                    "pattern": "^#[0-9a-fA-F]{6}$"
+                  },
+                  "icon": {
+                    "description": "The icon drawn on the map; absent draws a dot.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "key": {
+                            "type": "string",
+                            "enum": [
+                              "camera",
+                              "check",
+                              "circle-alert",
+                              "clipboard-check",
+                              "flag",
+                              "house",
+                              "info",
+                              "leaf",
+                              "map-pin",
+                              "pencil",
+                              "trash-2",
+                              "tree-deciduous",
+                              "triangle-alert",
+                              "wrench"
+                            ],
+                            "description": "An icon of the registry MARKER_ICONS."
+                          },
+                          "size": {
+                            "description": "Icon size in px (8 to 128, default 32).",
+                            "type": "integer",
+                            "minimum": 8,
+                            "maximum": 128
+                          }
+                        },
+                        "required": [
+                          "key"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "svg": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "An inline SVG (checked by `checkMarkerSvg`)."
+                          },
+                          "size": {
+                            "description": "Icon size in px (8 to 128, default 32).",
+                            "type": "integer",
+                            "minimum": 8,
+                            "maximum": 128
+                          }
+                        },
+                        "required": [
+                          "svg"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "$ref": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Path of an SVG file of the project bundle."
+                          },
+                          "size": {
+                            "description": "Icon size in px (8 to 128, default 32).",
+                            "type": "integer",
+                            "minimum": 8,
+                            "maximum": 128
+                          }
+                        },
+                        "required": [
+                          "$ref"
+                        ],
+                        "additionalProperties": false
+                      }
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              },
+              "classify": {
+                "type": "object",
+                "properties": {
+                  "property": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "description": "The key of the `select` property whose value picks the look (the stage property is one)."
+                  },
+                  "values": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$",
+                      "description": "The stored value of one option of a select property. Letter first, e.g. v3 for the label 3."
+                    },
+                    "additionalProperties": {
+                      "type": "object",
+                      "properties": {
+                        "color": {
+                          "description": "The colour of the marker, of the dot, and of a line or polygon.",
+                          "type": "string",
+                          "pattern": "^#[0-9a-fA-F]{6}$"
+                        },
+                        "icon": {
+                          "description": "The icon drawn on the map; absent draws a dot.",
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "key": {
+                                  "type": "string",
+                                  "enum": [
+                                    "camera",
+                                    "check",
+                                    "circle-alert",
+                                    "clipboard-check",
+                                    "flag",
+                                    "house",
+                                    "info",
+                                    "leaf",
+                                    "map-pin",
+                                    "pencil",
+                                    "trash-2",
+                                    "tree-deciduous",
+                                    "triangle-alert",
+                                    "wrench"
+                                  ],
+                                  "description": "An icon of the registry MARKER_ICONS."
+                                },
+                                "size": {
+                                  "description": "Icon size in px (8 to 128, default 32).",
+                                  "type": "integer",
+                                  "minimum": 8,
+                                  "maximum": 128
+                                }
+                              },
+                              "required": [
+                                "key"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "svg": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "description": "An inline SVG (checked by `checkMarkerSvg`)."
+                                },
+                                "size": {
+                                  "description": "Icon size in px (8 to 128, default 32).",
+                                  "type": "integer",
+                                  "minimum": 8,
+                                  "maximum": 128
+                                }
+                              },
+                              "required": [
+                                "svg"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "$ref": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "description": "Path of an SVG file of the project bundle."
+                                },
+                                "size": {
+                                  "description": "Icon size in px (8 to 128, default 32).",
+                                  "type": "integer",
+                                  "minimum": 8,
+                                  "maximum": 128
+                                }
+                              },
+                              "required": [
+                                "$ref"
+                              ],
+                              "additionalProperties": false
+                            }
+                          ]
+                        }
+                      },
+                      "additionalProperties": false,
+                      "description": "How a feature looks on the map: a colour and an icon."
+                    },
+                    "description": "Option key to its look; every key is an option of the property."
+                  }
+                },
+                "required": [
+                  "property",
+                  "values"
+                ],
+                "additionalProperties": false,
+                "description": "The classifying property of a feature type: one select property, and a colour and icon per value."
+              },
+              "on_at_start": {
+                "description": "False: features of this type are hidden when a participant first opens the map (default true).",
+                "type": "boolean"
+              },
+              "values_at_start": {
+                "description": "The values of the classifying property (or the stage) that are shown at first; absent means all.",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "permissions": {
+                "type": "object",
+                "properties": {
+                  "see": {
+                    "description": "Roles that may see features of this type: one audience for all, or property key to audience (properties not listed stay visible to every role that sees the feature).",
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "enum": [
+                              "$all"
+                            ]
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$",
+                              "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+                            }
+                          }
+                        ],
+                        "description": "Who: \"$all\" or a list of role keys."
+                      },
+                      {
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string",
+                          "pattern": "^[a-z][a-z0-9_]*$",
+                          "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+                        },
+                        "additionalProperties": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "enum": [
+                                "$all"
+                              ]
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$",
+                                "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+                              }
+                            }
+                          ],
+                          "description": "Who: \"$all\" or a list of role keys."
+                        },
+                        "description": "Property key to audience."
+                      }
+                    ]
+                  },
+                  "visible_when": {
+                    "description": "Row-level filter: a feature is visible only while this is true (e.g. self.melder == actor.id). Compiled to SQL; `see` stays an audience.",
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "create": {
+                    "description": "Roles that may create features of this type.",
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "$all"
+                        ]
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "pattern": "^[a-z][a-z0-9_]*$",
+                          "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+                        }
+                      }
+                    ]
+                  },
+                  "delete": {
+                    "description": "Roles that may delete features of this type.",
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "$all"
+                        ]
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "pattern": "^[a-z][a-z0-9_]*$",
+                          "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+                        }
+                      }
+                    ]
+                  },
+                  "write": {
+                    "description": "Roles that may change properties: one audience for all, or property key to audience.",
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "enum": [
+                              "$all"
+                            ]
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$",
+                              "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+                            }
+                          }
+                        ],
+                        "description": "Who: \"$all\" or a list of role keys."
+                      },
+                      {
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string",
+                          "pattern": "^[a-z][a-z0-9_]*$",
+                          "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+                        },
+                        "additionalProperties": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "enum": [
+                                "$all"
+                              ]
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$",
+                                "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+                              }
+                            }
+                          ],
+                          "description": "Who: \"$all\" or a list of role keys."
+                        },
+                        "description": "Property key to audience."
+                      }
+                    ]
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Permissions of one feature type. Compiled into one SQL predicate, an allowlist and a planner check."
+              }
+            },
+            "required": [
+              "label",
+              "properties"
+            ],
+            "additionalProperties": false,
+            "description": "A feature type: the shape of features (properties, geometry, relations, permissions)."
+          }
+        },
+        "tasks": {
+          "description": "Tasks by key.",
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$"
+                    },
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "The name shown to participants."
+              },
+              "description": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$"
+                    },
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "A label: a plain string, or an object keyed by language tag ({ de: \"Baum\", en: \"Tree\" })."
+              },
+              "on": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "$map",
+                      "$none"
+                    ],
+                    "description": "A special offer: $map or $none."
+                  },
+                  {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "description": "A feature type key."
+                  },
+                  {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$",
+                      "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+                    },
+                    "description": "Several feature type keys."
+                  }
+                ],
+                "description": "Where the task is offered: a feature type key, a list of them, \"$map\" or \"$none\"."
+              },
+              "who": {
+                "description": "The roles whose people may run the task, plus the reserved `admin` (an admin account). Without `who` no person may run it: it is automatic only (C-004).",
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$",
+                  "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+                }
+              },
+              "when": {
+                "description": "The one shared condition (state only: stage, values, time): the task is available, to people and to its automatic actions, only while this is true.",
+                "type": "string",
+                "minLength": 1
+              },
+              "creates": {
+                "description": "The feature type key this task creates. Required for `on: $map`; optional for others (a feature-creating task on $none names it too).",
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              },
+              "bind": {
+                "description": "Related features by name: expressions over declared relations only.",
+                "type": "object",
+                "propertyNames": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$",
+                  "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+                },
+                "additionalProperties": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "An expression in the rule language (a CEL subset). Type-checked by compile()."
+                }
+              },
+              "form": {
+                "description": "Fields by property key; `<bind>.<property>` shows and edits a property of a bound Objekt (A-047).",
+                "type": "object",
+                "propertyNames": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)?$",
+                  "description": "A property key of the task subject, or `<bind>.<property>`: a property of the Objekt that `bind` names."
+                },
+                "additionalProperties": {
+                  "type": "object",
+                  "properties": {
+                    "label": {
+                      "description": "Overrides the property label in this form.",
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "object",
+                          "propertyNames": {
+                            "type": "string",
+                            "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$"
+                          },
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        }
+                      ]
+                    },
+                    "relevant": {
+                      "description": "Field is shown and submitted only while this is true.",
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "required": {
+                      "description": "true, or an expression.",
+                      "anyOf": [
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "An expression in the rule language (a CEL subset). Type-checked by compile()."
+                        }
+                      ]
+                    },
+                    "constraint": {
+                      "description": "Must be true for the value to be accepted; `value` is the input.",
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "constraint_message": {
+                      "description": "Shown when the constraint fails.",
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "object",
+                          "propertyNames": {
+                            "type": "string",
+                            "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$"
+                          },
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        }
+                      ]
+                    },
+                    "calculate": {
+                      "description": "Computes the value (also used to prefill from the current value).",
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "readonly": {
+                      "description": "true, or an expression.",
+                      "anyOf": [
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "An expression in the rule language (a CEL subset). Type-checked by compile()."
+                        }
+                      ]
+                    },
+                    "choice_filter": {
+                      "description": "select/multiselect: true for an option that is offered; `option` is the option key, next to `form` and `self` (ODK choice_filter).",
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "placeholder": {
+                      "description": "Grey hint inside an empty text, number or choice input (v3 placeholder).",
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "object",
+                          "propertyNames": {
+                            "type": "string",
+                            "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$"
+                          },
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        }
+                      ]
+                    },
+                    "page": {
+                      "description": "This field starts a new page of the form; the title and description are drawn on that page.",
+                      "type": "object",
+                      "properties": {
+                        "label": {
+                          "description": "The page title: the tab and the heading.",
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            {
+                              "type": "object",
+                              "propertyNames": {
+                                "type": "string",
+                                "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$"
+                              },
+                              "additionalProperties": {
+                                "type": "string"
+                              }
+                            }
+                          ]
+                        },
+                        "hint": {
+                          "description": "The description under the heading.",
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            {
+                              "type": "object",
+                              "propertyNames": {
+                                "type": "string",
+                                "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$"
+                              },
+                              "additionalProperties": {
+                                "type": "string"
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "appearance": {
+                      "description": "A space-separated list of rendering hints for the form renderer (registry FORM_APPEARANCES).",
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "tool": {
+                      "description": "The key of a tool that produces the value.",
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$"
+                    },
+                    "column": {
+                      "description": "Width of the field in this form: full (default), left or right (two half-width cells of one row sit side by side, also on a phone). The Daten view has its own (`display.column`).",
+                      "type": "string",
+                      "enum": [
+                        "full",
+                        "left",
+                        "right"
+                      ]
+                    },
+                    "row": {
+                      "description": "The line of the field in this form: neighbours with the same row share a line; one without a row is a line of its own. The Daten view has its own (`display.row`).",
+                      "type": "number"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "description": "One field of a form."
+                }
+              },
+              "steps": {
+                "description": "The ordered steps of a multi-step task, submitted as one run. Without `steps` the task is its form (or one tap).",
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "const": "form",
+                          "description": "The step kind."
+                        }
+                      },
+                      "required": [
+                        "kind"
+                      ],
+                      "additionalProperties": false,
+                      "description": "The task form, at this position of the sequence."
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "const": "quick_edit",
+                          "description": "The step kind."
+                        },
+                        "properties": {
+                          "minItems": 1,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_]*$",
+                            "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+                          },
+                          "description": "Properties of the task subject, edited inline. An emptied value clears the property."
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "properties"
+                      ],
+                      "additionalProperties": false,
+                      "description": "Inline edit of the picked properties."
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "const": "location",
+                          "description": "The step kind."
+                        },
+                        "property": {
+                          "type": "string",
+                          "pattern": "^[a-z][a-z0-9_]*$",
+                          "description": "A geometry property of the task subject."
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "property"
+                      ],
+                      "additionalProperties": false,
+                      "description": "Move the pin or redraw the shape."
+                    }
+                  ],
+                  "description": "One step: form, quick_edit, location."
+                }
+              },
+              "button": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "description": "A short button label; the task label when absent.",
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      {
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string",
+                          "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$"
+                        },
+                        "additionalProperties": {
+                          "type": "string"
+                        }
+                      }
+                    ]
+                  },
+                  "color": {
+                    "description": "A named colour (primary, success, warning, danger, neutral) or a #rrggbb hex.",
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "primary",
+                          "success",
+                          "warning",
+                          "danger",
+                          "neutral"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^#[0-9a-fA-F]{6}$"
+                      }
+                    ]
+                  },
+                  "icon": {
+                    "description": "An icon key of the design system.",
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_-]*$"
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Presentation of the task button."
+              },
+              "confirm": {
+                "description": "Asked before the run is submitted, when set.",
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$"
+                    },
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  }
+                ]
+              },
+              "then": {
+                "description": "Steps applied after the form, in order.",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "set": {
+                      "description": "Property key (or bound-feature path) to a value. A string is always an expression (a literal option key is written \"'massnahme'\"); numbers, booleans and null are literals.",
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string",
+                        "pattern": "^(?:[a-z][a-z0-9_]*|\\[\"(?:[^\"\\\\]|\\\\.)*\"\\])(?:\\.[a-z][a-z0-9_]*|\\[\"(?:[^\"\\\\]|\\\\.)*\"\\])*$",
+                        "description": "A path into the project file, e.g. types.baum.properties.vitalitaet or style[\"circle-color\"] (segments that are not keys are bracketed JSON strings)."
+                      },
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "boolean"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "redact": {
+                      "type": "object",
+                      "properties": {
+                        "subject": {
+                          "type": "string",
+                          "description": "Whose data this is: actor, feature, or property:<key> naming a participant property."
+                        },
+                        "of": {
+                          "description": "Who or what is erased: for `actor` and `property:<key>` an expression giving the participant id (for example `form.subject`); for `feature` a feature (default: the task subject).",
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "subject"
+                      ],
+                      "additionalProperties": false,
+                      "description": "Erases the personal values of the subject: the same kinds `personal.subject` uses."
+                    },
+                    "lifecycle": {
+                      "description": "Sets the system lifecycle of the task subject: active, completed, archived or deleted.",
+                      "type": "string",
+                      "enum": [
+                        "active",
+                        "completed",
+                        "archived",
+                        "deleted"
+                      ]
+                    },
+                    "of": {
+                      "description": "On `set` and `lifecycle`: a feature or a list of features (e.g. self.kinder) the step acts on instead of the task subject. Each is checked like the subject; at most THEN_STEP_TARGETS_MAX.",
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "when": {
+                      "description": "The step runs only when this is true.",
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "otherwise": {
+                      "description": "The step runs only when no earlier conditional step ran.",
+                      "type": "boolean",
+                      "const": true
+                    }
+                  },
+                  "additionalProperties": false,
+                  "description": "One step run after the form is accepted."
+                }
+              },
+              "auto": {
+                "description": "Automatic executions of this task by name: the system runs it by itself (C-004).",
+                "type": "object",
+                "propertyNames": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$",
+                  "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+                },
+                "additionalProperties": {
+                  "type": "object",
+                  "properties": {
+                    "label": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "object",
+                          "propertyNames": {
+                            "type": "string",
+                            "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$"
+                          },
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        }
+                      ],
+                      "description": "A label: a plain string, or an object keyed by language tag ({ de: \"Baum\", en: \"Tree\" })."
+                    },
+                    "after": {
+                      "description": "Timing: after this task ran on the same subject.",
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$"
+                    },
+                    "change": {
+                      "description": "Timing: after this property changed, `<type>.<property>` or `<type>.*`.",
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*\\.([a-z][a-z0-9_]*|\\*)$"
+                    },
+                    "elapsed": {
+                      "description": "Timing, server-only: fires when the clock passes from + after + offset.",
+                      "type": "object",
+                      "properties": {
+                        "from": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "A time expression (date or datetime) the timer follows."
+                        },
+                        "after": {
+                          "description": "A duration added to `from`.",
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "offset": {
+                          "description": "A signed duration added to `from` (e.g. -days(14)).",
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "from"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "schedule": {
+                      "description": "Timing, server-only: a cron expression.",
+                      "type": "string",
+                      "pattern": "^\\S+( \\S+){4}$"
+                    },
+                    "idle": {
+                      "description": "With `schedule`: a duration (e.g. days(7)). The schedule visits every Objekt of the task's Objektart and fires only on those whose last change is at least this long ago.",
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "when": {
+                      "description": "ANDed with the task `when`. Without a timing both together fire the entry when a run turns them false -> true; with a timing they must also hold.",
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "additionalProperties": false,
+                  "description": "An automatic execution of the task: timing + optional condition."
+                }
+              }
+            },
+            "required": [
+              "label",
+              "on"
+            ],
+            "additionalProperties": false,
+            "description": "A task: a defined way to change features (on, bind, form, then)."
+          }
+        },
+        "views": {
+          "description": "Views by key.",
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "description": "The name shown to participants.",
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$"
+                    },
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  }
+                ]
+              },
+              "source": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "description": "The feature type key."
+                  },
+                  "filter": {
+                    "description": "A rule-language filter, always clipped by the compiled permissions.",
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "type"
+                ],
+                "additionalProperties": false,
+                "description": "What a view selects."
+              },
+              "camera": {
+                "type": "object",
+                "properties": {
+                  "center": {
+                    "minItems": 2,
+                    "maxItems": 3,
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    },
+                    "description": "[lon, lat] or [lon, lat, z]."
+                  },
+                  "zoom": {
+                    "description": "Map zoom level.",
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 24
+                  },
+                  "pitch": {
+                    "description": "Degrees from straight down.",
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 85
+                  },
+                  "bearing": {
+                    "description": "Degrees clockwise from north.",
+                    "type": "number",
+                    "minimum": -360,
+                    "maximum": 360
+                  }
+                },
+                "required": [
+                  "center"
+                ],
+                "additionalProperties": false,
+                "description": "The initial camera of a view."
+              },
+              "sort": {
+                "description": "Property keys to sort by; a leading \"-\" sorts descending.",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "properties": {
+                "description": "Property keys the view carries; absent means all allowed.",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$",
+                  "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+                }
+              },
+              "layers": {
+                "description": "Map layers by key.",
+                "type": "object",
+                "propertyNames": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$",
+                  "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+                },
+                "additionalProperties": {
+                  "type": "object",
+                  "properties": {
+                    "source": {
+                      "description": "Overrides the view source for this layer: features or an external asset.",
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$",
+                              "description": "The feature type key."
+                            },
+                            "filter": {
+                              "description": "A rule-language filter, always clipped by the compiled permissions.",
+                              "type": "string",
+                              "minLength": 1
+                            }
+                          },
+                          "required": [
+                            "type"
+                          ],
+                          "additionalProperties": false,
+                          "description": "What a view selects."
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "asset": {
+                              "type": "string",
+                              "minLength": 1,
+                              "description": "A blob prefix or a URL of the asset."
+                            },
+                            "format": {
+                              "description": "The asset format, from the registry; absent means the renderer decides.",
+                              "type": "string",
+                              "enum": [
+                                "3dtiles"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "asset"
+                          ],
+                          "additionalProperties": false,
+                          "description": "An external asset shown next to features."
+                        }
+                      ]
+                    },
+                    "renderer": {
+                      "type": "string",
+                      "enum": [
+                        "maplibre-2d"
+                      ],
+                      "description": "The renderer, from the registry (H1). The style format belongs to it."
+                    },
+                    "style": {
+                      "description": "A renderer-specific style: an object (MapLibre Style Spec for maplibre-2d) or { $ref: path }.",
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "$ref": {
+                              "type": "string",
+                              "minLength": 1,
+                              "description": "Path of a style file."
+                            }
+                          },
+                          "required": [
+                            "$ref"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
+                          "additionalProperties": {
+                            "$ref": "#/$defs/__schema0"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "renderer"
+                  ],
+                  "additionalProperties": false,
+                  "description": "The visual presentation of a view on the map. Never a dataset."
+                }
+              }
+            },
+            "required": [
+              "source"
+            ],
+            "additionalProperties": false,
+            "description": "A view: filter, sort, properties and style. Drives map layers, lists, exports, the API and the sync scope."
+          }
+        },
+        "tools": {
+          "description": "Tool settings by tool key.",
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+          },
+          "additionalProperties": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "description": "Settings of one tool; its keys belong to the tool."
+          }
+        },
+        "map": {
+          "type": "object",
+          "properties": {
+            "start": {
+              "description": "Where the map opens.",
+              "type": "object",
+              "properties": {
+                "center": {
+                  "minItems": 2,
+                  "maxItems": 3,
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  },
+                  "description": "[lon, lat] or [lon, lat, z]."
+                },
+                "zoom": {
+                  "description": "Map zoom level.",
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 24
+                }
+              },
+              "required": [
+                "center"
+              ],
+              "additionalProperties": false
+            },
+            "min_zoom": {
+              "description": "Lowest zoom the map allows (A-036).",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 24
+            },
+            "max_zoom": {
+              "description": "Highest zoom the map allows (A-036).",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 24
+            },
+            "layers": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+              },
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      {
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string",
+                          "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$"
+                        },
+                        "additionalProperties": {
+                          "type": "string"
+                        }
+                      }
+                    ],
+                    "description": "The name in the layer sheet."
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "base",
+                      "overlay"
+                    ],
+                    "description": "Base or overlay."
+                  },
+                  "source": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "xyz",
+                          "wms",
+                          "geojson",
+                          "pmtiles",
+                          "preset"
+                        ],
+                        "description": "The source type, from the registry."
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": {},
+                    "description": "Where a map layer gets its data; the keys depend on `type` (registry MAP_SOURCE_TYPES)."
+                  },
+                  "attribution": {
+                    "description": "Credit line shown on the map; presets bring their own.",
+                    "type": "string"
+                  },
+                  "opacity": {
+                    "description": "0 to 1 (default 1).",
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "minzoom": {
+                    "description": "Lowest zoom at which the layer is drawn.",
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 24
+                  },
+                  "maxzoom": {
+                    "description": "Highest zoom at which the layer is drawn.",
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 24
+                  },
+                  "roles": {
+                    "description": "Role keys that see the layer; absent means every role.",
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$",
+                      "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+                    }
+                  },
+                  "on_at_start": {
+                    "description": "On when a participant first opens the map.",
+                    "type": "boolean"
+                  },
+                  "advanced": {
+                    "description": "MapLibre Style Spec paint and layout properties of the layer, checked by the Style Spec.",
+                    "type": "object",
+                    "properties": {
+                      "paint": {
+                        "description": "Style Spec paint properties.",
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string"
+                        },
+                        "additionalProperties": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      },
+                      "layout": {
+                        "description": "Style Spec layout properties.",
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string"
+                        },
+                        "additionalProperties": {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "label",
+                  "kind",
+                  "source"
+                ],
+                "additionalProperties": false,
+                "description": "A map background layer: a base map or an overlay."
+              },
+              "description": "Background layers by key; authored order is the draw order."
+            },
+            "packs": {
+              "description": "Offline packs by key: regions of the layers that devices download (A-032).",
+              "type": "object",
+              "propertyNames": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+              },
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      {
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string",
+                          "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$"
+                        },
+                        "additionalProperties": {
+                          "type": "string"
+                        }
+                      }
+                    ],
+                    "description": "The name in the offline settings."
+                  },
+                  "bounds": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ],
+                    "items": false,
+                    "minItems": 4,
+                    "maxItems": 4,
+                    "description": "[west, south, east, north] in WGS84 degrees; the checker reports a box that is not valid."
+                  },
+                  "min_zoom": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991,
+                    "description": "Lowest zoom level in the pack."
+                  },
+                  "max_zoom": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991,
+                    "description": "Highest zoom level in the pack."
+                  },
+                  "layers": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$",
+                      "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+                    },
+                    "description": "Keys of `map.layers` the pack holds, one file each."
+                  },
+                  "roles": {
+                    "description": "Role keys that get the pack; absent means everyone who sees the layers.",
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$",
+                      "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+                    }
+                  }
+                },
+                "required": [
+                  "label",
+                  "bounds",
+                  "min_zoom",
+                  "max_zoom",
+                  "layers"
+                ],
+                "additionalProperties": false,
+                "description": "One offline pack."
+              }
+            },
+            "order": {
+              "description": "Layer keys in draw order, first is lowest; overrides authored order.",
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+              }
+            }
+          },
+          "required": [
+            "layers"
+          ],
+          "additionalProperties": false,
+          "description": "The map backgrounds of the project and where the map opens."
+        },
+        "branding": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "description": "The name participants see; absent means the project name.",
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string",
+                    "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$"
+                  },
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              ]
+            },
+            "icon": {
+              "description": "The project icon: the sha-256 of an image blob (type and size from the registry), served to every participant.",
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          },
+          "additionalProperties": false,
+          "description": "The project as participants see it (A-036)."
+        },
+        "info_pages": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$"
+                    },
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "The name shown in the Einstellungen sheet."
+              },
+              "content": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$"
+                    },
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "The text as HTML; sanitised on display."
+              },
+              "sort_order": {
+                "description": "Lower numbers come first; equal or absent ones keep the authored order.",
+                "type": "number"
+              }
+            },
+            "required": [
+              "title",
+              "content"
+            ],
+            "additionalProperties": false,
+            "description": "An info page: a help text with a title and sanitised HTML content."
+          },
+          "description": "Info pages by key; shown to every participant of the project."
+        },
+        "migrations": {
+          "description": "Data migrations shipped with major versions, run as system runs.",
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^\\d+ -> \\d+$"
+          },
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+              },
+              "additionalProperties": {
+                "$ref": "#/$defs/__schema0"
+              },
+              "description": "One migration step, e.g. { rename_option: { … } }."
+            }
+          }
+        }
+      },
+      "required": [
+        "schema",
+        "template"
+      ],
+      "additionalProperties": false,
+      "description": "A template file: a published, versioned project blueprint."
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "string",
+          "enum": [
+            "ueberblick/1"
+          ],
+          "description": "The platform schema version. First line of the file."
+        },
+        "extends": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*@\\d+(\\.\\d+){0,2}$",
+          "description": "The template and version range this project builds on, e.g. baumkataster@1."
+        },
+        "inputs": {
+          "description": "Values for the template inputs.",
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/__schema0"
+          }
+        },
+        "override": {
+          "description": "Key path to the new value.",
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^(?:[a-z][a-z0-9_]*|\\[\"(?:[^\"\\\\]|\\\\.)*\"\\])(?:\\.[a-z][a-z0-9_]*|\\[\"(?:[^\"\\\\]|\\\\.)*\"\\])*$",
+            "description": "A path into the project file, e.g. types.baum.properties.vitalitaet or style[\"circle-color\"] (segments that are not keys are bracketed JSON strings)."
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/__schema0"
+          }
+        },
+        "add": {
+          "description": "Key path to a new entity or value.",
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^(?:[a-z][a-z0-9_]*|\\[\"(?:[^\"\\\\]|\\\\.)*\"\\])(?:\\.[a-z][a-z0-9_]*|\\[\"(?:[^\"\\\\]|\\\\.)*\"\\])*$",
+            "description": "A path into the project file, e.g. types.baum.properties.vitalitaet or style[\"circle-color\"] (segments that are not keys are bracketed JSON strings)."
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/__schema0"
+          }
+        },
+        "hide": {
+          "description": "Key paths of template elements to hide.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(?:[a-z][a-z0-9_]*|\\[\"(?:[^\"\\\\]|\\\\.)*\"\\])(?:\\.[a-z][a-z0-9_]*|\\[\"(?:[^\"\\\\]|\\\\.)*\"\\])*$",
+            "description": "A path into the project file, e.g. types.baum.properties.vitalitaet or style[\"circle-color\"] (segments that are not keys are bracketed JSON strings)."
+          }
+        },
+        "order": {
+          "description": "Key path of a map to the keys that come first, in this order; unlisted keys follow.",
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^(?:[a-z][a-z0-9_]*|\\[\"(?:[^\"\\\\]|\\\\.)*\"\\])(?:\\.[a-z][a-z0-9_]*|\\[\"(?:[^\"\\\\]|\\\\.)*\"\\])*$",
+            "description": "A path into the project file, e.g. types.baum.properties.vitalitaet or style[\"circle-color\"] (segments that are not keys are bracketed JSON strings)."
+          },
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*$",
+              "description": "A config key. Lowercase letters, digits and underscores, starting with a letter. Never renamed."
+            }
+          }
+        }
+      },
+      "required": [
+        "schema",
+        "extends"
+      ],
+      "additionalProperties": false,
+      "description": "An overlay file: what a project adds, overrides, hides or reorders relative to its template."
+    }
+  ],
+  "$defs": {
+    "__schema0": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema0"
+          }
+        },
+        {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/__schema0"
+          }
+        }
+      ]
+    }
+  },
+  "$id": "https://ueberblick.app/schema/ueberblick-1.schema.json",
+  "title": "Überblick project file (schema ueberblick/1)"
+}

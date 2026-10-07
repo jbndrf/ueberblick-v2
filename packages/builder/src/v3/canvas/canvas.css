@@ -1,0 +1,402 @@
+/* The canvas look, ported from v3's Tailwind classes (task-canvas/*.svelte) onto the builder's tokens. */
+.canvas-root {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  flex: 1;
+}
+.canvas-root .svelte-flow {
+  --xy-background-color: var(--card);
+  --xy-edge-stroke: #64748b;
+  --xy-edge-stroke-width: 2;
+  --xy-edge-stroke-selected: var(--primary);
+}
+.canvas-root .svelte-flow__edge .svelte-flow__edge-path {
+  stroke: #64748b;
+  stroke-width: 2;
+}
+.canvas-root .svelte-flow__edge .entry-edge {
+  stroke: #22c55e;
+  stroke-dasharray: 5 5;
+}
+.canvas-root .svelte-flow__edge .rule-edge {
+  stroke: #f59e0b;
+  stroke-dasharray: 6 4;
+}
+.canvas-root .svelte-flow__edge .otherwise-edge {
+  stroke-dasharray: 2 5;
+}
+.canvas-root .svelte-flow__attribution {
+  display: none;
+}
+
+/* stage card */
+.canvas-root .stage-node {
+  position: relative;
+  box-sizing: border-box;
+  width: 220px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-left: 4px solid #3b82f6;
+  border-radius: 0.5rem;
+  background: var(--card);
+  color: var(--foreground);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+  cursor: pointer;
+}
+.canvas-root .stage-node.start {
+  border-left-color: #22c55e;
+}
+.canvas-root .stage-node.end {
+  border-left-color: #ec4899;
+}
+.canvas-root .stage-node.selected,
+.canvas-root .stage-node:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 40%, transparent);
+}
+.canvas-root .node-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.375rem;
+}
+.canvas-root .icon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+.canvas-root .stage-node.start .icon.accent {
+  color: #22c55e;
+}
+.canvas-root .stage-node.end .icon.accent {
+  color: #ec4899;
+}
+.canvas-root .stage-node.step .icon.accent {
+  color: #3b82f6;
+}
+.canvas-root .icon.muted {
+  color: var(--muted-foreground);
+}
+.canvas-root .icon.spawns {
+  width: 0.875rem;
+  height: 0.875rem;
+  color: #6366f1;
+}
+.canvas-root .stage-title {
+  min-width: 0;
+  flex: 1;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+  color: var(--foreground);
+}
+
+/* inline edit (v3 InlineEdit) */
+.canvas-root .inline-edit-text {
+  display: block;
+  box-sizing: border-box;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: text;
+  overflow-wrap: anywhere;
+}
+.canvas-root .inline-edit-text:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+  border-radius: 2px;
+}
+.canvas-root .inline-edit {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 0 0.25rem;
+  border: 1px solid var(--ring);
+  border-radius: 4px;
+  background: var(--background);
+  color: inherit;
+  font: inherit;
+}
+
+/* task buttons */
+.canvas-root .toolbar-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+/* Sub-process links (S4-5): the 'verknüpft' chip under a task button, and the link back on the child's canvas. */
+.canvas-root .subprocess-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-basis: 100%;
+  min-height: 1.5rem;
+  font-size: 0.6875rem;
+  color: #6366f1;
+  text-decoration: none;
+}
+.canvas-root .subprocess-link:hover,
+.canvas-root .subprocess-link:focus-visible {
+  text-decoration: underline;
+}
+.canvas-root .subprocess-back {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  padding: 0.25rem 0.625rem;
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  background: var(--card);
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+.canvas-root .subprocess-back a {
+  color: #6366f1;
+  min-height: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+}
+.canvas-root .toolbar {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.375rem;
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  background: color-mix(in srgb, var(--background) 80%, transparent);
+  cursor: pointer;
+}
+.canvas-root .toolbar.selected {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary) 40%, transparent);
+}
+.canvas-root .toolbar:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+}
+.canvas-root .toolbar-label {
+  min-width: 0;
+  flex: 1;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--foreground);
+}
+.canvas-root .tools {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.canvas-root .tool {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 0.25rem;
+  background: var(--muted);
+  color: var(--muted-foreground);
+}
+.canvas-root .tool-icon {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+.canvas-root .no-tools {
+  font-size: 10px;
+  font-style: italic;
+  color: color-mix(in srgb, var(--muted-foreground) 70%, transparent);
+}
+
+/* handles (exit dots, entry dot) */
+.canvas-root .svelte-flow__handle.entry-dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border: 2px solid var(--background);
+  background: #6366f1;
+}
+.canvas-root .svelte-flow__handle.exit-dot {
+  right: -0.75rem;
+  width: 0.625rem;
+  height: 0.625rem;
+  border: 2px solid var(--background);
+  background: color-mix(in srgb, var(--muted-foreground) 50%, transparent);
+}
+.canvas-root .svelte-flow__handle.exit-dot.transition {
+  background: var(--primary);
+}
+.canvas-root .svelte-flow__handle.exit-dot.entry {
+  right: -0.375rem;
+  background: #22c55e;
+}
+.canvas-root .svelte-flow__handle.exit-dot.rule {
+  right: -0.375rem;
+  background: #f59e0b;
+}
+
+/* global container */
+.canvas-root .global-node {
+  box-sizing: border-box;
+  width: 220px;
+  padding: 0.5rem 0.75rem;
+  border: 1px dashed color-mix(in srgb, var(--muted-foreground) 40%, transparent);
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--card) 80%, transparent);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+}
+.canvas-root .global-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* entry marker */
+.canvas-root .entry-node {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 190px;
+  padding: 0.375rem 0.75rem;
+  border: 2px dashed color-mix(in srgb, #22c55e 50%, transparent);
+  border-radius: 1rem;
+  background: #f0fdf4;
+  color: #14532d;
+  cursor: pointer;
+}
+.canvas-root .entry-node:hover {
+  border-style: solid;
+  border-color: #22c55e;
+}
+.canvas-root .entry-node.selected {
+  border-style: solid;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent);
+}
+.canvas-root .entry-node:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+}
+.canvas-root .entry-icon {
+  color: #16a34a;
+}
+.canvas-root .entry-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* rule node */
+.canvas-root .toolbar.automatic {
+  border-color: color-mix(in srgb, #fbbf24 60%, transparent);
+  background: #fffbeb;
+}
+.canvas-root .auto-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.dark .canvas-root .toolbar.automatic {
+  background: color-mix(in srgb, #451a03 40%, transparent);
+}
+.canvas-root .rule-node {
+  position: relative;
+  box-sizing: border-box;
+  min-width: 150px;
+  max-width: 220px;
+  padding: 0.375rem 0.625rem;
+  border: 1px solid color-mix(in srgb, #fbbf24 60%, transparent);
+  border-radius: 0.375rem;
+  background: #fffbeb;
+  color: #1c1917;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+  cursor: pointer;
+}
+.canvas-root .rule-node.selected,
+.canvas-root .rule-node:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 40%, transparent);
+}
+.canvas-root .rule-head {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+.canvas-root .rule-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+  color: #f59e0b;
+}
+.canvas-root .rule-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+.canvas-root .badge {
+  margin-left: auto;
+  padding: 0 0.25rem;
+  border-radius: 0.25rem;
+  background: color-mix(in srgb, #f59e0b 15%, transparent);
+  font-size: 9px;
+  font-weight: 500;
+  color: #92400e;
+}
+.canvas-root .rule-trigger,
+.canvas-root .rule-outcome {
+  margin-top: 0.125rem;
+  overflow-wrap: anywhere;
+  font-size: 0.6875rem;
+  font-weight: 500;
+}
+.canvas-root .rule-run {
+  margin-top: 0.125rem;
+  overflow-wrap: anywhere;
+  font-size: 10px;
+  color: #57534e;
+}
+
+/* empty state */
+.canvas-root .empty-note {
+  position: absolute;
+  inset: auto 0 1rem 0;
+  z-index: 5;
+  margin: 0 auto;
+  width: fit-content;
+  max-width: calc(100% - 2rem);
+  padding: 0.5rem 0.75rem;
+  border: 1px dashed var(--border);
+  border-radius: 0.5rem;
+  background: var(--card);
+  font-size: 0.8125rem;
+  font-style: italic;
+  color: var(--muted-foreground);
+  pointer-events: none;
+}
+
+/* dark: the app sets the `.dark` class (packages/ui app.css) */
+.dark .canvas-root .entry-node {
+  background: color-mix(in srgb, #14532d 30%, transparent);
+  color: var(--foreground);
+}
+.dark .canvas-root .rule-node {
+  background: color-mix(in srgb, #451a03 40%, transparent);
+  color: var(--foreground);
+}
+.dark .canvas-root .rule-trigger,
+.dark .canvas-root .rule-run {
+  color: var(--muted-foreground);
+}

@@ -1,0 +1,19 @@
+{
+  "name": "@ueberblick/migrate",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/config/index.ts",
+    "./diffcheck": "./src/diffcheck/index.ts",
+    "./data": "./src/data/index.ts"
+  },
+  "description": "Migration tool: v3 project configuration to a v4 template plus overlay (WP-300), the differential check (WP-302) and the data conversion into import runs (WP-301).",
+  "scripts": {
+    "migrate": "node --disable-warning=ExperimentalWarning --experimental-transform-types --import ../../scripts/backup/register.mjs src/cli.ts"
+  },
+  "dependencies": {
+    "@ueberblick/core": "*",
+    "@ueberblick/server": "*"
+  }
+}

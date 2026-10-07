@@ -1,0 +1,12 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "search_clear": "Suche leeren",
+  "search_count": "{n} Treffer. Tippen Sie auf einen, um ihn zu öffnen.",
+  "search_label": "Suche",
+  "search_more": "Die ersten {n} werden angezeigt. Tippen Sie mehr, um einzugrenzen.",
+  "search_noPosition": "Dieses Objekt hat keine Position auf der Karte.",
+  "search_noSources": "Für diese Ansicht sind keine Suchfelder eingerichtet.",
+  "search_none": "Keine Treffer für „{query}“.",
+  "search_notReady": "Die Suche ist noch nicht bereit. Versuchen Sie es gleich noch einmal.",
+  "search_placeholder": "Objekte suchen"
+}

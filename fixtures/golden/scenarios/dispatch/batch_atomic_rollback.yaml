@@ -1,0 +1,48 @@
+scenario: batch_atomic_rollback
+title: "H2. One refused run in an atomic batch refuses the whole batch and leaves no trace; a non-atomic batch keeps the accepted runs"
+foundations: [F3, F12]
+capabilities: [h2_atomic_batch]
+given:
+  project: projects/stadtwerke-meldungen.yaml
+  include: [seeds/stadtwerke.yaml]
+  now: "2026-05-01T08:00:00Z"
+when:
+  - id: s1                                # the third item has no assignee (required)
+    kind: batch
+    atomic: true
+    runs:
+      - { task: einsatz_anlegen, actor: sabine, creates: $new:e1, input: { titel: Auftrag 1, zustaendig: hans } }
+      - { task: einsatz_anlegen, actor: sabine, creates: $new:e2, input: { titel: Auftrag 2, zustaendig: hilde } }
+      - { task: einsatz_anlegen, actor: sabine, creates: $new:e3, input: { titel: Auftrag 3 } }
+      - { task: einsatz_anlegen, actor: sabine, creates: $new:e4, input: { titel: Auftrag 4, zustaendig: hans } }
+  - id: s2                                # the same items, non-atomic: the bad one is refused alone
+    kind: batch
+    atomic: false
+    runs:
+      - { task: einsatz_anlegen, actor: sabine, creates: $new:f1, input: { titel: Auftrag 1, zustaendig: hans } }
+      - { task: einsatz_anlegen, actor: sabine, creates: $new:f2, input: { titel: Auftrag 3 } }
+      - { task: einsatz_anlegen, actor: sabine, creates: $new:f3, input: { titel: Auftrag 4, zustaendig: hans } }
+  - id: s3                                # a technician may not create work orders, in a batch or alone
+    kind: batch
+    atomic: true
+    runs:
+      - { task: einsatz_anlegen, actor: hans, creates: $new:g1, input: { titel: Eigenauftrag, zustaendig: hans } }
+then:
+  steps:
+    s1:
+      outcome: refused
+      refusal: batch_failed
+      failed_item: 3
+      item_refusal: { code: required_missing, field: zustaendig }
+      no_trace: true                      # no observations, no seq consumed; the rejected runs rows stay as the ledger
+    s2:
+      outcome: partial
+      accepted_items: [1, 3]
+      refused_items: [{ item: 2, refusal: required_missing }]
+    s3: { outcome: refused, refusal: batch_failed, failed_item: 1, item_refusal: { code: not_permitted }, no_trace: true }
+  features:
+    e1: { exists: false }
+    e4: { exists: false }
+    f1: { type: einsatz, properties: { zustaendig: hans } }
+    f3: { type: einsatz, properties: { zustaendig: hans } }
+    f2: { exists: false }

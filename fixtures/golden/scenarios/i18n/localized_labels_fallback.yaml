@@ -1,0 +1,40 @@
+scenario: localized_labels_fallback
+title: "LocalizedString resolves by locale with a fixed fallback chain (requested, project default, first available); plain strings apply to every locale"
+foundations: [F1, F12]
+capabilities: [multilingual]
+given:
+  project: projects/stadtwerke-meldungen.yaml
+  platform: { default_locale: de }
+when:
+  - id: s1
+    kind: resolve
+    path: roles.melder.label
+    locale: uk
+  - id: s2
+    kind: resolve
+    path: roles.melder.label
+    locale: en
+  - id: s3                                   # no French: falls back to the project default
+    kind: resolve
+    path: roles.melder.label
+    locale: fr
+  - id: s4                                   # a label written in only one language
+    kind: resolve
+    path: views.melden.label
+    locale: en
+  - id: s5                                   # requested locale present
+    kind: resolve
+    path: roles.melder.label
+    locale: de
+  - id: s6                                   # option labels are plain strings and identical in every locale
+    kind: resolve
+    path: types.meldung.properties.status.options.offen
+    locale: uk
+then:
+  steps:
+    s1: { value: Заявник }
+    s2: { value: Reporter }
+    s3: { value: Melder, fallback: default_locale }
+    s4: { value: Melden, fallback: default_locale }
+    s5: { value: Melder }
+    s6: { value: Offen }

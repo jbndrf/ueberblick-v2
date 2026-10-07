@@ -1,0 +1,9 @@
+#!/bin/sh
+# Blocks commits that break the fast guardrails (CLAUDE.md): reference/ guard, prettier and eslint on the
+# staged files, glossary and ui-strings lint (scripts/ops/precommit.mjs, WP-953). No typecheck here:
+# check:changed and the land train run it.
+# core.hooksPath is the main checkout's .githooks for every worktree, so the scripts are taken from next to
+# this hook (main's), and they lint the committing worktree (the cwd). A worktree whose branch predates a
+# script still commits.
+here=$(dirname "$(realpath "$0")")
+exec "$here/../scripts/ops/check-gate.sh" --light node "$here/../scripts/ops/precommit.mjs"

@@ -1,0 +1,43 @@
+scenario: timer_escalation
+title: "A time-based rule fires when the injected clock passes its due time; the timer is a server row, never a device clock"
+foundations: [F2, F3, F4, F12]
+capabilities: [timer, template_inputs]
+given:
+  project: projects/stadtwerke-meldungen.yaml       # eskalation_tage overridden to 3
+  include: [seeds/stadtwerke.yaml]
+  now: "2026-05-01T08:00:00Z"
+when:
+  - id: s1
+    kind: run
+    task: melden
+    actor: mia
+    creates: $new:m1
+    input:
+      geometrie: { type: Point, coordinates: [7.10, 50.75] }
+      kategorie: muell
+      beschreibung: { de: Sperrmüll }
+  - id: s2                                          # 2 days later: nothing is due
+    kind: advance
+    to: "2026-05-03T08:00:00Z"
+  - id: s3                                          # after 3 days the rule fires as a system run
+    kind: advance
+    to: "2026-05-04T08:00:01Z"
+  - id: s4                                          # advancing again fires nothing twice
+    kind: advance
+    to: "2026-05-20T08:00:00Z"
+then:
+  steps:
+    s1:
+      outcome: accepted
+      timers_after: [{ feature: $new:m1, rule: eskalieren.eskalation_nach_frist, due_at: "2026-05-04T00:00:00Z" }]
+    s2: { fired: [] }
+    s3:
+      fired:
+        - { rule: eskalieren.eskalation_nach_frist, task: eskalieren, actor_kind: system, feature: $new:m1, outcome: accepted }
+      observations:
+        - { feature: $new:m1, property: eskaliert, result: true }
+        - { feature: $new:m1, property: prioritaet, result: hoch }
+    s4: { fired: [] }
+  features:
+    m1: { properties: { eskaliert: true, prioritaet: hoch, status: offen } }
+  timers_end: []                                    # the fired timer is removed

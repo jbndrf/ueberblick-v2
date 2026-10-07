@@ -1,0 +1,16 @@
+{
+  "name": "@ueberblick/client",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "description": "Device runtime: IndexedDB store, run queue, sync worker (implements core ports, docs/03-architecture.md).",
+  "dependencies": {
+    "@ueberblick/core": "*"
+  },
+  "devDependencies": {
+    "fake-indexeddb": "^6.0.0"
+  }
+}

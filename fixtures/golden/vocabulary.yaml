@@ -1,0 +1,87 @@
+# The closed vocabulary the scenarios may use. corpus.spec.ts enforces it.
+# Refusal codes are PROVISIONAL: the WP-041 registry decides the final list, and the corpus is then aligned.
+foundations: [F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12, F13]
+
+step_kinds:
+  run: one run by one actor
+  batch: several runs in one request, one transaction, one seq range (H2)
+  advance: move the injected clock forward and fire due timers
+  import: an import run (actor kind import) with an optional source_crs
+  export: read features out in an interchange format
+  upgrade: move a project to a newer template version
+  publish: check a template version against its predecessor (semver rules)
+  compile: compile a project and report problems
+  view: query a saved or ephemeral view as an actor
+  app_profile: read the app profile of an actor's role (H3)
+  resolve: resolve a LocalizedString for a locale
+  replay: send an earlier run again (idempotency); the same run answers from the ledger, optional input overrides it
+  replay_refused: send an earlier run id again with another actor and/or another input; expects id_taken and no trace (WP-754). Server-only; see fixtures/golden/runner/README.md
+  explain: ask why a task is or is not available
+
+refusal_codes:
+  not_permitted: the actor's role may not do this (see / create / write)
+  not_available: the task's when is false; explain says why
+  unknown_task: no such task in the effective config (for example hidden)
+  invalid_input: the input does not match the form
+  required_missing: a relevant required field has no value
+  constraint_failed: a field constraint is false
+  readonly_field: a readonly field was supplied
+  bind_unresolved: a required bind has no related feature
+  bind_undeclared: a task addresses a feature outside its declared binds
+  id_taken: the run id was used before by another actor or with another payload (a replay must be identical)
+  geometry_required: a required geometry is missing
+  depth_exceeded: the rule chain went deeper than the platform limit
+  batch_failed: one run of an atomic batch was refused, so the whole batch is
+  crs_undeclared: an import has no source_crs
+  property_not_visible: an expression named a property the actor may not see
+  unknown_property: an expression named a property that does not exist
+
+# Codes of the core registry (packages/core/src/registry/compile.ts PROBLEM_CODES); a test keeps them equal.
+problem_codes:
+  lock_violation: the overlay touches a path the template locks
+  unknown_path: the overlay addresses a path the template does not have, including an undeclared input as inputs.<name>
+  hidden_referenced: something hides an element that another element still uses
+
+# Every tag here must be exercised by at least one scenario (the coverage gate in corpus.spec.ts).
+capabilities:
+  - bind
+  - derived_relation
+  - point_in_polygon
+  - polygon_hole
+  - boundary_case
+  - reference
+  - odk_relevant
+  - odk_constraint
+  - odk_calculate
+  - odk_required
+  - odk_readonly
+  - non_relevant_not_submitted
+  - permission_see
+  - permission_create
+  - permission_write
+  - visible_when
+  - rule_chain
+  - rule_depth_limit
+  - timer
+  - template_inputs
+  - template_lock
+  - overlay_add
+  - overlay_override
+  - overlay_hide
+  - upgrade_auto_change
+  - upgrade_kept_override
+  - upgrade_conflict
+  - data_migration
+  - semver_check
+  - multilingual
+  - crs_import
+  - no_geometry
+  - idempotency
+  - config_version
+  - derived_values
+  - h1_z_geometry
+  - h2_atomic_batch
+  - h3_role_app
+  - h4_ephemeral_view
+  - erasure
+  - task_steps

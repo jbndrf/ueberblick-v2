@@ -1,0 +1,8 @@
+# Nur für HTTPS_MODE=direct (WP-964). In .env die Zeile aktivieren: COMPOSE_FILE=docker-compose.yaml:docker-compose.direct.yaml
+# Veröffentlicht den http-Port, der auf https umleitet. Ohne diese Datei (Proxy-Modus, oder Umleitung aus) wird er nicht veröffentlicht.
+# Only for HTTPS_MODE=direct (WP-964). Activate in .env the line: COMPOSE_FILE=docker-compose.yaml:docker-compose.direct.yaml
+# Publishes the http port that redirects to https. Without this file (proxy mode, or redirect off) it is not published.
+services:
+  app:
+    ports:
+      - '${HTTP_PORT:-8080}:8080'

@@ -1,0 +1,57 @@
+# Überblick v4: ein Befehl / one command: `docker compose up -d`
+#
+# 1. cp .env.example .env     und wenige Zeilen anpassen / edit a few lines
+# 2. docker compose up -d     die App läuft auf APP_PORT / the app runs on APP_PORT
+#
+# Alle Daten liegen im Ordner ./data (Datenbanken, Dateien, Zertifikate in ./data/tls).
+# All data lives in the folder ./data (databases, files, certificates in ./data/tls).
+
+services:
+  app:
+    # Das Image wird aus diesem Ordner gebaut. / The image is built from this folder.
+    image: ${UEBERBLICK_IMAGE:-ueberblick:local}
+    build: .
+    # Alle Einstellungen kommen aus .env (siehe .env.example). / All settings come from .env.
+    env_file: .env
+    environment:
+      # Fest im Image, nicht ändern. / Fixed by the image, do not change.
+      DATA_DIR: /data
+      HOST: 0.0.0.0
+      PORT: '3000'
+    volumes:
+      - ./data:/data
+    ports:
+      - '${APP_PORT:-3000}:3000'
+      # HTTPS_MODE=direct (WP-941): die HTTPS-Adresse der App auf HTTPS_PORT. Im Proxy-Modus lauscht dort nichts.
+      # HTTPS_MODE=direct (WP-941): the app's own HTTPS address on HTTPS_PORT. Nothing listens there in proxy mode.
+      - '${HTTPS_PORT:-8443}:8443'
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '5'
+  # --- Datensicherung / backup (WP-943): docker compose --profile backup up -d ---
+  # Sichert alle Datenbanken laufend (Litestream) und die Dateien in den Ordner BACKUP_DIR (aus .env).
+  # Backs up all databases continuously (Litestream) and the files into the folder BACKUP_DIR (from .env).
+  backup:
+    profiles: ['backup']
+    build:
+      context: .
+      dockerfile: ops/litestream/Dockerfile
+    image: ${UEBERBLICK_BACKUP_IMAGE:-ueberblick-backup:local}
+    environment:
+      DATA_DIR: /data
+      BACKUP_TARGET: /backup
+      # Leer = Dienst verweigert den Start (Compose prüft Variablen auch für nicht gestartete Profile).
+      # Empty = the service refuses to start (Compose interpolates variables even for profiles not started).
+      BACKUP_DIR_SET: ${BACKUP_DIR:-}
+    volumes:
+      - ./data:/data
+      - ${BACKUP_DIR:-./backup-not-configured}:/backup
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '3'

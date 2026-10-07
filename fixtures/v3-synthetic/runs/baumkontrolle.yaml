@@ -1,0 +1,78 @@
+# Recorded v3 task runs on fixtures/v3-synthetic/config/baumkontrolle.yaml (synthetic: written from the v3 rules, not
+# taken from a real log). Format: apps/migrate/README.md, "Differential check".
+- id: erfassen-ok
+  workflow: baum
+  task: erfassen
+  actor: { id: anna, roles: [kontrolle] }
+  input: { vitalitaet: "3" }
+  geometry: { type: Point, coordinates: [7.63, 51.96] }
+  recorded: { outcome: accepted, stage: erfasst, values: { vitalitaet: "3" } }
+- id: erfassen-wrong-role
+  workflow: baum
+  task: erfassen
+  actor: { id: bernd, roles: [bauhof] }
+  input: { vitalitaet: "3" }
+  recorded: { outcome: refused, reason: role condition }
+# v3 computes kronenflaeche in the task; the converter does too, and the task's roles may write it.
+- id: kontrolle-ok
+  workflow: baum
+  task: kontrolle
+  actor: { id: anna, roles: [kontrolle] }
+  instance: { stage: erfasst, values: { vitalitaet: "2", hoehe_m: 12 } }
+  input: { vitalitaet: "3", befund: Pilzbefall am Stamm, hoehe_m: 12 }
+  recorded:
+    outcome: accepted
+    stage: kontrolliert
+    values: { vitalitaet: "3", befund: Pilzbefall am Stamm, besichtigt: ok, kronenflaeche: 48 }
+- id: kontrolle-stage-end
+  workflow: baum
+  task: kontrolle
+  actor: { id: anna, roles: [kontrolle] }
+  instance: { stage: erledigt, values: { vitalitaet: "2" } }
+  input: { vitalitaet: "3", befund: Pilzbefall am Stamm }
+  recorded: { outcome: refused, reason: stage condition }
+- id: kontrolle-wrong-role
+  workflow: baum
+  task: kontrolle
+  actor: { id: bernd, roles: [bauhof] }
+  instance: { stage: erfasst, values: { vitalitaet: "2" } }
+  input: { vitalitaet: "3", befund: Pilzbefall am Stamm }
+  recorded: { outcome: refused, reason: role condition }
+- id: kontrolle-empty-instance
+  workflow: baum
+  task: kontrolle
+  actor: { id: anna, roles: [kontrolle] }
+  instance: { stage: erfasst, values: {} }
+  input: { vitalitaet: "3", befund: Pilzbefall am Stamm }
+  recorded: { outcome: refused, reason: "any-clause fails: no vitalitaet and no befund yet" }
+- id: massnahme-anlegen-ok
+  workflow: baum
+  task: massnahme_anlegen
+  actor: { id: anna, roles: [kontrolle] }
+  instance: { stage: massnahme, status: active, values: { befund: alt, pruefzahl: 4 } }
+  recorded: { outcome: accepted, values: { befund: null } }
+- id: massnahme-anlegen-wrong-stage
+  workflow: baum
+  task: massnahme_anlegen
+  actor: { id: anna, roles: [kontrolle] }
+  instance: { stage: erfasst, status: active, values: {} }
+  recorded: { outcome: refused, reason: stage condition }
+- id: verschieben-owner
+  workflow: baum
+  task: verschieben
+  actor: { id: anna, roles: [kontrolle] }
+  instance: { stage: erfasst, createdBy: anna, values: {} }
+  geometry: { type: Point, coordinates: [7.64, 51.97] }
+  recorded: { outcome: accepted }
+- id: verschieben-not-owner
+  workflow: baum
+  task: verschieben
+  actor: { id: bernd, roles: [kontrolle] }
+  instance: { stage: erfasst, createdBy: anna, values: {} }
+  geometry: { type: Point, coordinates: [7.64, 51.97] }
+  recorded: { outcome: refused, reason: ownership condition }
+- id: unknown-task
+  workflow: baum
+  task: gibtsnicht
+  actor: { id: anna, roles: [kontrolle] }
+  recorded: { outcome: accepted }

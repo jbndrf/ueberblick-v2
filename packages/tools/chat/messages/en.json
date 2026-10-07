@@ -1,0 +1,18 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "chat_composer_label": "Write a message",
+  "chat_empty": "No messages yet. Be the first to say hi.",
+  "chat_failed": "The message could not be saved.",
+  "chat_list_label": "Messages",
+  "chat_mention_empty": "No participants",
+  "chat_mention_label": "Mention someone",
+  "chat_not_member": "Project chat is not available for your role.",
+  "chat_pending": "Sending …",
+  "chat_placeholder": "Message…",
+  "chat_refused": "Not sent: {reason}",
+  "chat_refused_discard": "Discard",
+  "chat_refused_retry": "Send again",
+  "chat_send": "Send",
+  "chat_unknown": "Unknown",
+  "chat_you": "You"
+}

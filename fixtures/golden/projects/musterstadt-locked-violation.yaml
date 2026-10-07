@@ -1,0 +1,13 @@
+schema: ueberblick/1
+extends: baumkataster@1
+inputs: { kontrollintervall_monate: 6, unbekannt: 1 }
+override:
+  types.baum.properties.stage.options: { erfasst: { de: Neu, en: New } }     # locked by the template
+add:
+  views.karte_3d:
+    label: { de: Karte 3D, en: Map 3D }
+    source: { type: baum }
+    layers:
+      gebaeude: { source: { type: baum }, renderer: maplibre-2d }
+hide:
+  - tasks.kontrolle                                          # still the trigger of tasks.massnahme_anlegen.auto.massnahme_bei_schaden

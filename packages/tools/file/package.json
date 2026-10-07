@@ -1,0 +1,17 @@
+{
+  "name": "@ueberblick/tool-file",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "sideEffects": false,
+  "description": "File tool: picks files of any accepted type (v3 'Dateien'), stores the bytes, produces a file value.",
+  "scripts": {
+    "i18n": "paraglide-js compile --project ./project.inlang --outdir ./src/paraglide"
+  },
+  "dependencies": {
+    "@ueberblick/ui": "*"
+  }
+}

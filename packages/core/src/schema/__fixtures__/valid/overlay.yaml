@@ -1,0 +1,10 @@
+schema: ueberblick/1
+extends: baumkataster@1
+inputs: { kontrollintervall_monate: 18 }
+override:
+  types.baum.properties.vitalitaet.label: { de: Vitalität (Roloff) }
+add:
+  types.baum.properties.patenschaft: { type: text, label: Patenschaft }
+  views.paten: { source: { type: baum, filter: "self.patenschaft != ''" } }
+hide:
+  - tasks.melden

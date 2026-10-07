@@ -1,0 +1,13 @@
+# A view with an external 3D asset layer next to a feature layer, and a camera with Z (H1).
+source: { type: gebaeude }
+camera: { center: [13.4, 52.5, 34.0], zoom: 17.5, pitch: 60, bearing: -20 }
+layers:
+  bestand:
+    source: { type: gebaeude }
+    renderer: maplibre-2d
+  modell:
+    source: { asset: 'https://tiles.example.org/rathaus/tileset.json', format: 3dtiles }
+    renderer: maplibre-2d
+  scan:
+    source: { asset: 'blob/scans/2026-09/' }
+    renderer: maplibre-2d

@@ -1,0 +1,31 @@
+{
+  "journey": "demo",
+  "title": "Demo",
+  "viewport": { "width": 360, "height": 800 },
+  "steps": [
+    { "n": 1, "cmd": "seed", "locator": null, "args": ["musterstadt-baeume"], "url": "about:blank" },
+    { "n": 2, "cmd": "open", "locator": null, "args": ["http://127.0.0.1:41234/admin/projects/musterstadtbaeume/types/baum/builder"], "url": "http://127.0.0.1:41234/admin/projects/musterstadtbaeume/types/baum/builder" },
+    { "n": 3, "cmd": "click", "locator": { "role": "button", "name": "Outline" }, "args": [], "url": "http://127.0.0.1:41234/x" },
+    { "n": 4, "cmd": "click", "locator": { "role": "link", "name": "Tree's type", "nth": 1 }, "args": [], "url": "http://127.0.0.1:41234/x" },
+    { "n": 5, "cmd": "fill", "locator": { "testid": "name-input" }, "args": ["Oak"], "url": "http://127.0.0.1:41234/x" },
+    { "n": 6, "cmd": "fill", "locator": { "label": "Password" }, "args": ["a\\b"], "url": "http://127.0.0.1:41234/x" },
+    { "n": 7, "cmd": "select", "locator": { "role": "combobox", "name": "Offered on" }, "args": ["tree"], "url": "http://127.0.0.1:41234/x" },
+    { "n": 8, "cmd": "press", "locator": null, "args": ["Enter"], "url": "http://127.0.0.1:41234/x" },
+    { "n": 9, "cmd": "wait", "locator": null, "args": ["Saved"], "url": "http://127.0.0.1:41234/x" },
+    { "n": 10, "cmd": "wait", "locator": { "role": "status", "name": "Save status" }, "args": [], "url": "http://127.0.0.1:41234/x" },
+    { "n": 11, "cmd": "click", "locator": { "testid": "row", "nth": 2 }, "args": [], "url": "http://127.0.0.1:41234/x" },
+    { "n": 12, "cmd": "click", "locator": { "label": "Name", "nth": 0 }, "args": [], "url": "http://127.0.0.1:41234/x" }
+  ],
+  "expectations": [
+    { "after": 0, "expect": { "text": "Before anything" } },
+    { "after": 2, "expect": { "role": "navigation", "name": "Path", "visible": true } },
+    { "after": 4, "expect": { "role": "heading", "name": "Tree", "text": "Tree" } },
+    { "after": 4, "expect": { "role": "listitem", "name": "Row", "count": 3 } },
+    { "after": 4, "expect": { "url": "/admin/projects/musterstadtbaeume/types/baum/builder" } },
+    { "after": 9, "expect": { "text": "Saved" } },
+    { "after": 10, "expect": { "testid": "spinner", "visible": false } },
+    { "after": 10, "expect": { "label": "Name", "visible": true } },
+    { "after": 11, "expect": { "testid": "row", "count": 4 } },
+    { "after": 12, "expect": { "label": "Name", "text": "Oak" } }
+  ]
+}

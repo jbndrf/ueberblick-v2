@@ -1,0 +1,49 @@
+# Negative cases for asset sources and cameras. `path` is the path of one of the issues.
+- name: asset source with a filter
+  path: layers.modell.source
+  view:
+    {
+      source: { type: baum },
+      layers: { modell: { renderer: maplibre-2d, source: { asset: 'blob/m/', filter: 'true' } } },
+    }
+- name: source with type and asset
+  path: layers.modell.source
+  view:
+    {
+      source: { type: baum },
+      layers: { modell: { renderer: maplibre-2d, source: { type: baum, asset: 'blob/m/' } } },
+    }
+- name: feature source without type
+  path: layers.modell.source
+  view: { source: { type: baum }, layers: { modell: { renderer: maplibre-2d, source: { filter: 'true' } } } }
+- name: unknown asset format
+  path: layers.modell.source
+  view:
+    {
+      source: { type: baum },
+      layers: { modell: { renderer: maplibre-2d, source: { asset: 'blob/m/', format: ifc } } },
+    }
+- name: empty asset
+  path: layers.modell.source
+  view: { source: { type: baum }, layers: { modell: { renderer: maplibre-2d, source: { asset: '' } } } }
+- name: view source cannot be an asset
+  path: source.type
+  view: { source: { asset: 'blob/m/' } }
+- name: camera center with one number
+  path: camera.center
+  view: { source: { type: baum }, camera: { center: [13.4] } }
+- name: camera center with four numbers
+  path: camera.center
+  view: { source: { type: baum }, camera: { center: [13.4, 52.5, 1, 2] } }
+- name: camera latitude out of range
+  path: camera.center.1
+  view: { source: { type: baum }, camera: { center: [13.4, 91] } }
+- name: camera pitch out of range
+  path: camera.pitch
+  view: { source: { type: baum }, camera: { center: [13.4, 52.5], pitch: 100 } }
+- name: camera without center
+  path: camera.center
+  view: { source: { type: baum }, camera: { zoom: 3 } }
+- name: camera with an unknown key
+  path: camera
+  view: { source: { type: baum }, camera: { center: [13.4, 52.5], roll: 3 } }

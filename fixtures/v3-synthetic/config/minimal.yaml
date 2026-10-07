@@ -1,0 +1,18 @@
+# Synthetic v3 project definition: the smallest valid export.
+format: 1
+version: 0
+source: { name: Minimal, description: "" }
+settings: {}
+roles: [{ key: admin, record: { name: Admin } }]
+custom_tables: []
+map_layers: []
+info_pages: []
+workflows:
+  - key: punkt
+    record: { name: Punkt, geometry_type: point }
+    field_defs: []
+    document:
+      version: 0
+      stages: [{ key: neu, name: Neu, type: start }]
+      edges: []
+      tasks: []

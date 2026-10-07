@@ -1,0 +1,52 @@
+scenario: multi_step_task_one_run
+title: "A multi-step task (quick edit, then location) is one run; an emptied quick-edit value clears, an unchanged one writes nothing"
+foundations: [F3, F5]
+capabilities: [task_steps]
+given:
+  project: projects/musterstadt-plain.yaml
+  include: [seeds/musterstadt-geo.yaml]
+  now: "2026-05-01T08:00:00Z"
+  participants:
+    anna: { roles: [kontrolle] }
+when:
+  - id: s1                                # both steps in one run
+    kind: run
+    task: baum_bearbeiten
+    actor: anna
+    feature: t_in
+    input:
+      beschreibung: { de: Alte Linde am Weg }
+      geometrie: { type: Point, coordinates: [7.1021, 50.7321] }
+  - id: s2                                # the same description again: nothing to write for it
+    kind: run
+    task: baum_bearbeiten
+    actor: anna
+    feature: t_in
+    input: { beschreibung: { de: Alte Linde am Weg } }
+  - id: s3                                # an emptied description clears the property
+    kind: run
+    task: baum_bearbeiten
+    actor: anna
+    feature: t_in
+    input: { beschreibung: {} }
+  - id: s4                                # a value outside every step is refused
+    kind: run
+    task: baum_bearbeiten
+    actor: anna
+    feature: t_in
+    input: { befund: nein }
+then:
+  steps:
+    s1:
+      outcome: accepted
+      observations:
+        - { feature: t_in, property: beschreibung, result: { de: Alte Linde am Weg } }
+        - { feature: t_in, property: geometrie, result: { type: Point, coordinates: [7.1021, 50.7321] } }
+    s2: { outcome: accepted, observations: [] }
+    s3:
+      outcome: accepted
+      observations:
+        - { feature: t_in, property: beschreibung, result: null }
+    s4: { outcome: refused, refusal: invalid_input, no_trace: true }
+  features:
+    t_in: { absent: [beschreibung] }

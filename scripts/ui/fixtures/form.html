@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>ui.mjs fixture</title>
+  </head>
+  <body>
+    <header><h1>Fixture page</h1></header>
+    <nav aria-label="Main"><a href="#next">Next section</a></nav>
+    <main>
+      <form aria-label="Sample" onsubmit="return false">
+        <label for="name">Your name</label>
+        <input id="name" type="text" />
+        <input type="text" id="anon" />
+        <label for="kind">Kind</label>
+        <select id="kind">
+          <option value="a">Alpha</option>
+          <option value="b">Beta</option>
+        </select>
+        <button type="button" id="save" onclick="document.getElementById('out').textContent = 'saved ' + document.getElementById('name').value">Save</button>
+        <button type="button" data-testid="icon-only" onclick="document.getElementById('out').textContent = 'icon clicked'"><svg width="10" height="10" aria-hidden="true"></svg></button>
+        <button type="button" onclick="document.getElementById('late').hidden = false">Reveal</button>
+      </form>
+      <p id="out" role="status"></p>
+      <p id="key"></p>
+      <p id="late" hidden>Late arrival</p>
+      <img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" width="4" height="4" />
+      <img src="/missing.png" alt="missing" />
+    </main>
+    <script>
+      console.error('planted console error');
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') document.getElementById('key').textContent = 'enter pressed';
+      });
+    </script>
+  </body>
+</html>

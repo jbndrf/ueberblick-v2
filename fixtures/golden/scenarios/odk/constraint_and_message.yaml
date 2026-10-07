@@ -1,0 +1,42 @@
+scenario: constraint_and_message
+title: "A failed constraint refuses the run and names the field with its localized message"
+foundations: [F3, F5, F12]
+capabilities: [odk_constraint, multilingual]
+given:
+  project: projects/musterstadt-plain.yaml
+  include: [seeds/musterstadt-geo.yaml]
+  now: "2026-05-01T08:00:00Z"
+when:
+  - id: s1                                # befund equals the current value: value != self.befund is false
+    kind: run
+    task: kontrolle
+    actor: anna
+    feature: t_in
+    input: { vitalitaet: "v2", befund: unauffällig }
+    locale: en
+  - id: s2
+    kind: run
+    task: kontrolle
+    actor: anna
+    feature: t_in
+    input: { vitalitaet: "v2", befund: unauffällig }
+    locale: de
+  - id: s3                                # a second constraint on a number field
+    kind: run
+    task: kontrolle
+    actor: anna
+    feature: t_in
+    input: { vitalitaet: "v2", befund: hoch, hoehe_m: 80 }
+    locale: de
+  - id: s4
+    kind: run
+    task: kontrolle
+    actor: anna
+    feature: t_in
+    input: { vitalitaet: "v2", befund: gemessen, hoehe_m: 12 }
+then:
+  steps:
+    s1: { outcome: refused, refusal: constraint_failed, field: befund, message: The finding must change, no_trace: true }
+    s2: { outcome: refused, refusal: constraint_failed, field: befund, message: Befund muss sich ändern, no_trace: true }
+    s3: { outcome: refused, refusal: constraint_failed, field: hoehe_m, message: Höhe zwischen 0 und 60 m, no_trace: true }
+    s4: { outcome: accepted }

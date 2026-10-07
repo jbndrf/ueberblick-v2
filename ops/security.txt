@@ -1,0 +1,6 @@
+# RFC 9116 source. needs-owner: replace the placeholder Contact and refresh Expires before each release.
+# Served at /.well-known/security.txt in Phase 2 (WP-502 does not serve it).
+Contact: mailto:security@example.org
+Expires: 2027-06-30T00:00:00.000Z
+Preferred-Languages: de, en
+Policy: https://example.org/security-policy

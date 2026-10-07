@@ -1,0 +1,19 @@
+scenario: lock_and_invalid_overlay
+title: "compile() reports every overlay problem with a path and a fix hint - undeclared input, locked key, hidden-but-used task (used by an automatic action and by a role shortcut)"
+foundations: [F1, F7, F8, F13]
+capabilities: [template_lock, overlay_hide, overlay_override, template_inputs, h1_z_geometry]
+given:
+  project: projects/musterstadt-locked-violation.yaml
+when:
+  - id: s1
+    kind: compile
+then:
+  steps:
+    s1:
+      outcome: failed
+      problems:                                  # exactly what template.merge reports, in this order
+        - { problem: unknown_path, path: inputs.unbekannt, message: "The template has no input unbekannt." }
+        - { problem: lock_violation, path: types.baum.properties.stage.options, message: "The template locks types.baum.properties.stage.options; the overlay may not touch types.baum.properties.stage.options." }
+        - { problem: hidden_referenced, path: tasks.massnahme_anlegen.auto.massnahme_bei_schaden.after, message: "tasks.massnahme_anlegen.auto.massnahme_bei_schaden.after refers to tasks.kontrolle, which the overlay hides." }
+        - { problem: hidden_referenced, path: roles.kontrolle.app.shortcuts, message: "roles.kontrolle.app.shortcuts refers to tasks.kontrolle, which the overlay hides." }
+      nothing_deployed: true

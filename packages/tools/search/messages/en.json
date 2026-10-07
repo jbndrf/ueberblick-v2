@@ -1,0 +1,12 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "search_clear": "Clear search",
+  "search_count": "{n} result(s). Tap one to open it.",
+  "search_label": "Search",
+  "search_more": "Showing the first {n}. Type more to narrow down.",
+  "search_noPosition": "This feature has no position on the map.",
+  "search_noSources": "No search fields are configured for this view.",
+  "search_none": "No results for \"{query}\".",
+  "search_notReady": "Search is not ready yet. Try again in a moment.",
+  "search_placeholder": "Search features"
+}

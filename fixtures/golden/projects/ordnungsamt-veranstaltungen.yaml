@@ -1,0 +1,5 @@
+schema: ueberblick/1
+extends: veranstaltung@1
+inputs: { erinnerung_tage: 21 }
+add:
+  types.veranstaltung.properties.personenzahl: { type: integer, label: { de: Erwartete Personen, en: Expected attendees } }

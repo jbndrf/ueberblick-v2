@@ -1,0 +1,166 @@
+schema: ueberblick/1
+template: { key: veranstaltung, version: 1.0.0 }
+
+inputs:
+  erinnerung_tage: { type: integer, default: 14, label: { de: Erinnerung vor Beginn (Tage), en: Reminder before start (days) }, description: { de: "So viele Tage vor dem Beginn einer Veranstaltung, die noch in Prüfung ist, wird einmalig erinnert (Regel erinnerung_vor_beginn, Aufgabe erinnern).", en: "This many days before the start of an event that is still under review, a reminder is sent once (rule erinnerung_vor_beginn, task erinnern)." } }
+
+roles:
+  antragsteller:
+    label: { de: Antragsteller, en: Applicant }
+    app: { home: meine_antraege, views: { meine_antraege: {} }, tools: { draw: {} }, shortcuts: { beantragen: {} } }
+  sachbearbeiter:
+    label: { de: Ordnungsamt, en: Licensing office }
+    app: { home: antraege, views: { antraege: {}, kollisionen: {} }, tools: { search: {}, measure: {} }, shortcuts: { pruefen: {}, genehmigen: {} } }
+  brandschutz:
+    label: { de: Brandschutz, en: Fire safety }
+    app: { home: antraege, views: { antraege: {} }, tools: { photo: {} }, shortcuts: { auflage_erteilen: {} } }
+
+types:
+  veranstaltung:
+    label: { de: Veranstaltung, en: Event }
+    geometry: geometrie
+    permissions:
+      see: { interne_bewertung: [sachbearbeiter] }     # per property; the row filter is visible_when
+      visible_when: "self.antragsteller == actor.id || !('antragsteller' in actor.roles)"
+      create: [antragsteller, sachbearbeiter]
+      write:
+        titel: [antragsteller]
+        datum: [antragsteller]
+        geometrie: [antragsteller]
+        status: [sachbearbeiter, antragsteller]
+        interne_bewertung: [sachbearbeiter]
+        begruendung: [sachbearbeiter]
+    process: { property: status, start: entwurf, end: [genehmigt, abgelehnt] }
+    marker: { color: "#2b6cb0" }
+    classify:
+      property: status
+      values:
+        entwurf: { color: "#a0aec0" }
+        eingereicht: { color: "#2b6cb0" }
+        in_pruefung: { color: "#d69e2e" }
+        genehmigt: { color: "#2f855a" }
+        abgelehnt: { color: "#c53030" }
+    properties:
+      titel: { type: text, required: true, label: { de: Titel, en: Title } }
+      geometrie: { type: geometry, geometry_type: polygon, required: true, label: { de: Fläche, en: Site } }
+      datum: { type: date, required: true, index: true, label: { de: Datum, en: Date } }
+      antragsteller: { type: participant, label: { de: Antragsteller, en: Applicant } }
+      status:
+        type: select
+        options: { entwurf: { de: Entwurf, en: Draft }, eingereicht: { de: Eingereicht, en: Submitted }, in_pruefung: { de: In Prüfung, en: Under review }, genehmigt: { de: Genehmigt, en: Approved }, abgelehnt: { de: Abgelehnt, en: Rejected } }
+        label: { de: Status, en: Status }
+      begruendung: { type: text, label: { de: Begründung, en: Reasoning } }
+      interne_bewertung: { type: text, label: { de: Interne Bewertung, en: Internal assessment } }
+      erinnert: { type: boolean, default: false, label: { de: Erinnert, en: Reminded } }
+    relations:
+      kollision:
+        to: veranstaltung
+        derive: "self != other && self.datum == other.datum && intersects(self.geometrie, other.geometrie)"
+        cardinality: many
+      auflagen: { to: auflage, inverse_of: auflage.veranstaltung, cardinality: many }
+  auflage:
+    label: { de: Auflage, en: Condition }
+    permissions: { see: $all, create: [sachbearbeiter, brandschutz], write: { veranstaltung: [sachbearbeiter, brandschutz], text: [sachbearbeiter, brandschutz], erfuellt: [antragsteller, sachbearbeiter] } }
+    properties:
+      veranstaltung: { type: reference, to: veranstaltung, required: true, label: { de: Veranstaltung, en: Event } }
+      text: { type: localized_text, required: true, label: { de: Text, en: Text } }
+      erfuellt: { type: boolean, default: false, label: { de: Erfüllt, en: Fulfilled } }
+  gebaeude:                                        # H1: a building with a 3D footprint and an external model asset
+    label: { de: Gebäude, en: Building }
+    geometry: geometrie
+    permissions: { see: $all, create: [sachbearbeiter], write: [sachbearbeiter] }
+    properties:
+      name: { type: text, label: { de: Name, en: Name } }
+      geometrie: { type: geometry, geometry_type: polygon, required: true, label: { de: Lage, en: Location } }
+      modell: { type: file, accept: [model/gltf-binary], label: { de: 3D-Modell, en: 3D model } }
+
+tasks:
+  beantragen:
+    label: { de: Veranstaltung beantragen, en: Apply for an event }
+    on: $map
+    who: [antragsteller]
+    creates: veranstaltung
+    form:
+      titel: { required: true }
+      datum: { required: true, constraint: "value > today()", constraint_message: { de: Das Datum muss in der Zukunft liegen } }
+      geometrie: { tool: draw, required: true }
+    then:
+      - set: { antragsteller: actor.id }
+      - set: { status: "'eingereicht'" }
+  pruefen:
+    label: { de: Prüfung beginnen, en: Start review }
+    on: veranstaltung
+    who: [sachbearbeiter]
+    when: "self.status == 'eingereicht'"
+    form:
+      interne_bewertung: {}
+    then:
+      - set: { status: "'in_pruefung'" }
+  auflage_erteilen:
+    label: { de: Auflage erteilen, en: Impose condition }
+    on: veranstaltung
+    who: [sachbearbeiter, brandschutz]
+    when: "self.status == 'in_pruefung'"
+    creates: auflage
+    form:
+      text: { required: true }
+    then:
+      - set: { veranstaltung: self }
+  genehmigen:
+    label: { de: Genehmigen, en: Approve }
+    on: veranstaltung
+    who: [sachbearbeiter]
+    when: "self.status == 'in_pruefung' && self.auflagen.all(a, a.erfuellt) && size(self.kollision) == 0"
+    form:
+      begruendung: {}
+    then:
+      - set: { status: "'genehmigt'" }
+  ablehnen:
+    label: { de: Ablehnen, en: Reject }
+    on: veranstaltung
+    who: [sachbearbeiter]
+    when: "self.status in ['eingereicht', 'in_pruefung']"
+    form:
+      begruendung: { required: true }
+    then:
+      - set: { status: "'abgelehnt'" }
+  erinnern:
+    label: { de: Erinnern, en: Remind }
+    on: veranstaltung
+    then:
+      - set: { erinnert: true }
+    auto:
+      erinnerung_vor_beginn:
+        elapsed: { from: self.datum, offset: "-days(inputs.erinnerung_tage)" }
+        when: "self.status == 'in_pruefung' && !self.erinnert"
+  gebaeude_erfassen:
+    label: { de: Gebäude erfassen, en: Record building }
+    on: $none
+    who: [sachbearbeiter, import]
+    creates: gebaeude
+    form:
+      name: {}
+      geometrie: { required: true }
+      modell: {}
+
+views:
+  meine_antraege:
+    label: { de: Meine Anträge, en: My applications }
+    source: { type: veranstaltung, filter: "self.antragsteller == actor.id" }
+  antraege:
+    label: { de: Anträge, en: Applications }
+    source: { type: veranstaltung }
+    layers:
+      flaechen: { source: { type: veranstaltung }, renderer: maplibre-2d }
+      gebaeude: { source: { type: gebaeude }, renderer: maplibre-2d }
+  kollisionen:
+    label: { de: Kollisionen, en: Collisions }
+    source: { type: veranstaltung, filter: "size(self.kollision) > 0" }
+
+tools:
+  draw: {}
+  search: { sources: [veranstaltung.titel] }
+  measure: {}
+  photo: {}
+
+migrations: {}

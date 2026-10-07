@@ -1,0 +1,44 @@
+{
+  "compilerOptions": {
+    "incremental": true,
+    "tsBuildInfoFile": "./node_modules/.cache/tsc/root.tsbuildinfo",
+    "target": "ES2023",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2023"],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "types": []
+  },
+  "include": [
+    "packages/**/*.ts",
+    "fixtures/**/*.ts",
+    "apps/migrate/**/*.ts",
+    "vitest.config.ts",
+    "scripts/**/*.ts",
+    "scripts/**/*.d.mts"
+  ],
+  "exclude": [
+    "**/node_modules",
+    "reference",
+    "**/dist",
+    ".claude",
+    "packages/ui",
+    "packages/builder",
+    "packages/tools/chat",
+    "packages/tools/photo",
+    "packages/tools/file",
+    "packages/tools/draw",
+    "packages/tools/measure",
+    "packages/tools/search",
+    "**/*.planted*",
+    "**/*.planted/**"
+  ]
+}

@@ -1,0 +1,31 @@
+scenario: kontrolle_bind_updates_related
+title: "One inspection run changes the tree and, through a declared bind, its area"
+foundations: [F3, F4, F9]
+capabilities: [bind, derived_relation, reference]
+given:
+  project: projects/musterstadt-plain.yaml
+  include: [seeds/musterstadt-geo.yaml]
+  now: "2026-05-01T08:00:00Z"
+when:
+  - id: s1
+    kind: run
+    task: kontrolle
+    actor: anna
+    feature: t_in
+    input: { vitalitaet: "v2", befund: Kronenpflege empfohlen }
+then:
+  steps:
+    s1:
+      outcome: accepted
+      observations:
+        - { feature: t_in, property: befund, result: Kronenpflege empfohlen }
+        - { feature: t_in, property: stage, result: kontrolliert }
+        - { feature: t_in, property: faellig_am, result: "2027-05-01" }
+        - { feature: t_in, property: kontrolle_faellig, result: false }
+        - { feature: park, property: letzte_kontrolle, result: "2026-05-01" }
+      same_run_and_seq_range: true       # one run, one transaction, contiguous seq
+  features:
+    t_in: { properties: { stage: kontrolliert, faellig_am: "2027-05-01" } }
+    park: { properties: { letzte_kontrolle: "2026-05-01" } }
+  edges:
+    - { from: t_in, relation: flaeche, to: park, derived: true }

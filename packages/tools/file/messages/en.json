@@ -1,0 +1,9 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "file_choose": "Files",
+  "file_done": "Added",
+  "file_failed": "The file could not be saved. Try another file.",
+  "file_limit": "File limit reached: remove one to add another.",
+  "file_not_accepted": "This file type is not allowed here.",
+  "file_processing": "Saving files …"
+}

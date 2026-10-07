@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Draw on the map harness</title>
+  </head>
+  <body>
+    <main id="app"></main>
+    <script type="module">
+      // the worker is served by the harness's vite config, as the app's build does for its own
+      import { setWorkerUrl } from 'maplibre-gl';
+      setWorkerUrl('/maplibre/maplibre-gl-worker.mjs');
+    </script>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

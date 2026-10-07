@@ -1,0 +1,190 @@
+# The v4 state that `baumkontrolle.yaml` (this folder) must convert to, checked by hand against the v3 log.
+# Keys are v3 ids; `@id` is a reference to the feature of that v3 id. `anchor` is the point on the surface from core.geo
+# (never the v3 vertex mean). `problems` is what the conversion reports, in order.
+problems:
+  - { code: not_carried, record: fl1 }
+  - { code: not_carried, record: b1 }
+  - { code: not_carried, record: b1 }
+  - { code: no_geometry, record: b3 }
+  - { code: no_counterpart, record: m2 }
+  - { code: unknown_workflow, record: ghost1 }
+features:
+  art_linde:
+    type: baumart
+    properties:
+      name: Linde
+      hoehe_max: 40
+      eingefuehrt: 1750-01-01
+      geschuetzt: true
+    geometry: null
+    anchor:
+      - null
+      - null
+  art_eiche:
+    type: baumart
+    properties:
+      name: Eiche
+      hoehe_max: 35
+      geschuetzt: false
+    geometry: null
+    anchor:
+      - null
+      - null
+  fl1:
+    type: flaeche
+    properties:
+      geom:
+        type: Polygon
+        coordinates:
+          - - - 7.6
+              - 51.96
+            - - 7.7
+              - 51.96
+            - - 7.7
+              - 51.97
+            - - 7.62
+              - 51.97
+            - - 7.62
+              - 52
+            - - 7.6
+              - 52
+            - - 7.6
+              - 51.96
+      stage: aktiv
+      name: Südpark
+      pflegeplan: Rasen dreimal mähen
+      lifecycle: active
+    geometry:
+      type: Polygon
+      coordinates:
+        - - - 7.6
+            - 51.96
+          - - 7.7
+            - 51.96
+          - - 7.7
+            - 51.97
+          - - 7.62
+            - 51.97
+          - - 7.62
+            - 52
+          - - 7.6
+            - 52
+          - - 7.6
+            - 51.96
+    anchor:
+      - 7.6121766
+      - 51.9675
+  b1:
+    type: baum
+    properties:
+      stage: kontrolliert
+      geom:
+        type: Point
+        coordinates:
+          - 7.6305
+          - 51.9612
+          - 62
+      vitalitaet: v1
+      hoehe_m: 12.5
+      created_by: anna
+      lifecycle: active
+      befund: Pilzbefall am Stämmling
+      kontrolldatum: 2025-03-07
+      kontrollzeit: 2025-03-07T09:30:00.000Z
+      massnahmen:
+        - faellen
+        - schnitt
+      art: "@art_linde"
+      flaeche_ref: "@fl1"
+    geometry:
+      type: Point
+      coordinates:
+        - 7.6305
+        - 51.9612
+        - 62
+    anchor:
+      - 7.6305
+      - 51.9612
+  b2:
+    type: baum
+    properties:
+      geom:
+        type: Point
+        coordinates:
+          - 7.631
+          - 51.962
+      stage: erledigt
+      created_by: anna
+      lifecycle: archived
+    geometry:
+      type: Point
+      coordinates:
+        - 7.631
+        - 51.962
+    anchor:
+      - 7.631
+      - 51.962
+  m1:
+    type: massnahme
+    properties:
+      geom:
+        type: Point
+        coordinates:
+          - 7.63
+          - 51.961
+      stage: offen
+      art: faellen
+      baum: "@b1"
+    geometry:
+      type: Point
+      coordinates:
+        - 7.63
+        - 51.961
+    anchor:
+      - 7.63
+      - 51.961
+  m2:
+    type: massnahme
+    properties:
+      geom:
+        type: Point
+        coordinates:
+          - 7.63
+          - 51.961
+      stage: offen
+      art: schnitt
+      baum: null
+    geometry:
+      type: Point
+      coordinates:
+        - 7.63
+        - 51.961
+    anchor:
+      - 7.63
+      - 51.961
+  l1:
+    type: leitung
+    properties:
+      geom:
+        type: LineString
+        coordinates:
+          - - 7.6
+            - 51.96
+            - 55
+          - - 7.61
+            - 51.965
+            - 56
+      stage: bestand
+      bezeichnung: Hauptleitung
+    geometry:
+      type: LineString
+      coordinates:
+        - - 7.6
+          - 51.96
+          - 55
+        - - 7.61
+          - 51.965
+          - 56
+    anchor:
+      - 7.605
+      - 51.9625

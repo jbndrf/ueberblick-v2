@@ -1,0 +1,31 @@
+scenario: bind_field_edits_related
+title: "A form field of a bound Objekt edits that Objekt in the same run; without write permission the run is refused"
+foundations: [F3, F4, F6, F9]
+capabilities: [bind, permission_write]
+given:
+  project: projects/musterstadt-bind-field.yaml
+  include: [seeds/musterstadt-geo.yaml]
+  now: "2026-05-01T08:00:00Z"
+when:
+  - id: s1                                # bauhof may not write the area: refused, nothing changes
+    kind: run
+    task: flaeche_pruefen
+    actor: bernd
+    feature: t_in
+    input: { area.name: Spielplatz Süd }
+  - id: s2                                # kontrolle may: tree and area change in one run
+    kind: run
+    task: flaeche_pruefen
+    actor: anna
+    feature: t_in
+    input: { area.name: Spielplatz Süd }
+then:
+  steps:
+    s1: { outcome: refused, refusal: not_permitted, no_trace: true }
+    s2:
+      outcome: accepted
+      observations:
+        - { feature: park, property: name, result: Spielplatz Süd }
+      same_run_and_seq_range: true
+  features:
+    park: { properties: { name: Spielplatz Süd } }

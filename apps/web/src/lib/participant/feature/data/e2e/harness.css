@@ -1,0 +1,3 @@
+/* The app's own css does this (apps/web/src/app.css): the kit, plus a scan of the app's sources for utility classes. */
+@import '../../../../../../../../packages/ui/src/app.css';
+@source '../../';

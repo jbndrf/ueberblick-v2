@@ -1,0 +1,67 @@
+scenario: upgrade_v1_to_v2
+title: "A municipality on baumkataster@1 upgrades to 2.0.0 - automatic change, kept override, one conflict, and a data migration as system runs"
+foundations: [F1, F4, F7, F13]
+capabilities: [upgrade_auto_change, upgrade_kept_override, upgrade_conflict, data_migration, overlay_override, overlay_add, template_inputs]
+given:
+  project: projects/musterstadt-baeume.yaml        # extends baumkataster@1, resolved to 1.1.0
+  now: "2026-05-01T08:00:00Z"
+  participants:
+    vera: { roles: [verwaltung] }
+  features:
+    t_a: { type: baum, properties: { geometrie: { type: Point, coordinates: [7.10, 50.73] }, stage: kontrolliert, vitalitaet: "v1", patenschaft: Familie Meier } }
+    t_b: { type: baum, properties: { geometrie: { type: Point, coordinates: [7.11, 50.74] }, stage: kontrolliert, vitalitaet: "v2" } }
+    t_c: { type: baum, properties: { geometrie: { type: Point, coordinates: [7.12, 50.75] }, stage: massnahme, vitalitaet: "v3" } }
+  history:                                          # t_a was kontrolliert since an old run: history is never rewritten
+    t_a: { stage: [erfasst, kontrolliert] }
+when:
+  - id: s1                                          # a first attempt stops at the conflict
+    kind: upgrade
+    to: templates/baumkataster/2.0.0.yaml
+    resolutions: {}
+  - id: s2                                          # the admin keeps the overlay's label for the conflicting key
+    kind: upgrade
+    to: templates/baumkataster/2.0.0.yaml
+    resolutions: { types.baum.properties.vitalitaet.label: overlay }
+    deploys_config_version: 2
+then:
+  steps:
+    s1:
+      outcome: blocked
+      conflicts:
+        - key: types.baum.properties.vitalitaet.label
+          base: { de: Vitalität, en: Vitality }
+          template: { de: Vitalität (Stufe), en: Vitality (level) }
+          overlay: { de: Vitalität (Roloff), en: Vitality (Roloff) }
+      nothing_deployed: true
+    s2:
+      outcome: accepted
+      auto_changed:                                 # template changed, overlay untouched: the new value wins
+        - types.baum.properties.befund.label
+        - types.baum.properties.stage.options
+        - tasks.kontrolle.then
+      kept_overrides:                               # overlay changed, template did not: the overlay wins
+        - tasks.kontrolle.label
+        - inputs.kontrollintervall_monate
+      kept_additions:
+        - types.baum.properties.patenschaft
+        - views.paten
+      resolved_conflicts:
+        - { key: types.baum.properties.vitalitaet.label, chose: overlay }
+      migrations_run: ["1 -> 2"]
+      migration_runs:                               # system runs, one per affected feature, appended as observations
+        - { actor_kind: system, feature: t_a, property: stage, result: geprueft }
+        - { actor_kind: system, feature: t_b, property: stage, result: geprueft }
+      migration_untouched: [t_c]
+      rewritten_expressions:
+        - { path: views.paten.source.filter, becomes: "self.patenschaft != '' && self.stage == 'geprueft'" }
+  features:
+    t_a: { properties: { stage: geprueft } }
+    t_b: { properties: { stage: geprueft } }
+    t_c: { properties: { stage: massnahme } }
+  history_kept:
+    t_a: { stage: [erfasst, kontrolliert, geprueft] }   # append-only: no rewriting
+  effective:
+    types.baum.properties.vitalitaet.label: { de: Vitalität (Roloff), en: Vitality (Roloff) }
+    types.baum.properties.befund.label: { de: Befund (Freitext), en: Finding (free text) }
+    tasks.kontrolle.label: { de: Regelkontrolle, en: Routine inspection }
+    inputs.kontrollintervall_monate: 18

@@ -1,0 +1,18 @@
+package-lock.json
+reference/
+docs/
+fixtures/
+.claude/
+**/project.inlang/.meta.json
+packages/ui/src/paraglide/
+packages/builder/src/paraglide/
+packages/tools/*/src/paraglide/
+apps/web/src/lib/participant/paraglide/
+packages/builder/project.inlang/cache/
+packages/ui/project.inlang/cache/
+apps/*/build/
+apps/*/.svelte-kit/
+**/.svelte-check/
+# Plants (scripts/testing/plant.mjs) come and go while specs run; a whole-repo check beside them reads a file mid-delete (ENOENT).
+**/*.planted*
+**/*.planted/

@@ -1,0 +1,46 @@
+scenario: localized_text_property
+title: "A localized text property stores one LocalizedString per observation; a later run may add a language without losing the others"
+foundations: [F4, F12]
+capabilities: [multilingual, odk_required]
+given:
+  project: projects/stadtwerke-meldungen.yaml
+  include: [seeds/stadtwerke.yaml]
+  now: "2026-05-01T08:00:00Z"
+when:
+  - id: s1                                   # the reporter writes in Ukrainian only
+    kind: run
+    task: melden
+    actor: mia
+    creates: $new:m1
+    input:
+      geometrie: { type: Point, coordinates: [7.10, 50.75] }
+      kategorie: strasse
+      beschreibung: { uk: Яма на дорозі }
+  - id: s2                                   # the case handler adds German by setting the whole value
+    kind: run
+    task: beschreibung_uebersetzen
+    actor: sabine
+    feature: $new:m1
+    input: { beschreibung: { uk: Яма на дорозі, de: Schlagloch auf der Straße } }
+  - id: s3                                   # an empty LocalizedString does not satisfy required
+    kind: run
+    task: melden
+    actor: mia
+    creates: $new:m2
+    input:
+      geometrie: { type: Point, coordinates: [7.10, 50.75] }
+      kategorie: strasse
+      beschreibung: {}
+  - id: s4
+    kind: resolve
+    feature: $new:m1
+    property: beschreibung
+    locale: en
+then:
+  steps:
+    s1: { outcome: accepted, observations: [{ feature: $new:m1, property: beschreibung, result: { uk: Яма на дорозі } }] }
+    s2: { outcome: accepted }
+    s3: { outcome: refused, refusal: required_missing, field: beschreibung, no_trace: true }
+    s4: { value: Schlagloch auf der Straße, fallback: default_locale }
+  features:
+    m1: { properties: { beschreibung: { uk: Яма на дорозі, de: Schlagloch auf der Straße } } }

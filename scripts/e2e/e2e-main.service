@@ -1,0 +1,12 @@
+# systemd --user oneshot for e2e on main (WP-978): scripts/e2e/main-watch.mjs. Exits 0 on red; reds go to metrics/raw/ATTENTION.md.
+# Install: cp scripts/e2e/e2e-main.{service,timer} ~/.config/systemd/user/ && systemctl --user daemon-reload && systemctl --user enable --now e2e-main.timer
+# Logs:    journalctl --user -u e2e-main
+[Unit]
+Description=Überblick v4 e2e on main (own worktree, one row in metrics/raw/e2e.jsonl)
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/ueberblick-v4
+ExecStart=/bin/bash -lc 'export NVM_DIR=$HOME/.nvm; . $NVM_DIR/nvm.sh; exec npm run -s e2e:main'
+Nice=10
+TimeoutStartSec=2h

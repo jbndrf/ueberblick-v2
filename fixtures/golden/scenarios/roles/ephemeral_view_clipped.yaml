@@ -1,0 +1,40 @@
+scenario: ephemeral_view_clipped
+title: "H4. A view invented at runtime (CEL filter plus style) returns only what the actor may see, and explain says why a row matches"
+foundations: [F5, F6, F10]
+capabilities: [h4_ephemeral_view, permission_see]
+given:
+  project: projects/stadtwerke-meldungen.yaml
+  include: [seeds/stadtwerke.yaml, seeds/stadtwerke-open.yaml]
+  now: "2026-05-01T08:00:00Z"
+when:
+  - id: s1                                # an assistant builds "all open reports" for a reporter: no admin ever configured it
+    kind: view
+    actor: mia
+    ephemeral:
+      source: { type: meldung, filter: "self.status != 'erledigt'" }
+      sort: [prioritaet]
+      style: { renderer: maplibre-2d, layers: [{ id: offen, type: circle, paint: { circle-color: "#e67e22" } }] }
+  - id: s2                                # the same view for a case handler
+    kind: view
+    actor: sabine
+    ephemeral:
+      source: { type: meldung, filter: "self.status != 'erledigt'" }
+      sort: [prioritaet]
+  - id: s3                                # why does m_mia match?
+    kind: explain
+    actor: mia
+    ephemeral:
+      source: { type: meldung, filter: "self.status != 'erledigt'" }
+    feature: m_mia
+  - id: s4                                # a filter cannot widen access: matching everything is still clipped
+    kind: view
+    actor: mia
+    ephemeral:
+      source: { type: meldung, filter: "true" }
+then:
+  steps:
+    s1: { ids: [m_mia], clipped: true, hidden_count_revealed: false, style_passed_through: true }
+    s2: { ids: [m_max, m_mia], clipped: false, order: [m_mia, m_max] }     # sort follows the option order: normal before hoch
+    s3: { matches: true, because: ["self.status != 'erledigt'"], values: { "self.status": offen } }
+    s4: { ids: [m_erledigt, m_mia], clipped: true }
+  ephemeral_views_persisted: 0            # nothing is stored unless a human saves it

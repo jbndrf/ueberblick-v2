@@ -1,0 +1,14 @@
+{
+  "$comment": "Not used by any template (WP-746/B-024: a looked type is not restyled). Kept as the compile tests' sample $ref target.",
+  "layers": [
+    {
+      "id": "baum",
+      "type": "circle",
+      "source": "ub-clusters",
+      "paint": {
+        "circle-radius": 6,
+        "circle-color": ["case", ["==", ["get", "kontrolle_faellig"], true], "#c0392b", ["==", ["get", "stage"], "massnahme"], "#e67e22", "#27ae60"]
+      }
+    }
+  ]
+}

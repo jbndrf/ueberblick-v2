@@ -1,0 +1,95 @@
+# Synthetic v3 data export (format 1) for fixtures/v3-synthetic/config/baumkontrolle.yaml. Built from the documented
+# v3 data tables (docs/research/arch-03-data-model-geometry.md): instances, the append-only field value log (rows in
+# insertion order), custom table rows. Not from a real project. `baumkontrolle.expected.yaml` is the v4 state.
+format: 1
+table_rows:
+  - { id: art_linde, table: baumart, created_at: "2025-01-10 08:00:00.000Z", values: { name: Linde, hoehe_max: 40, eingefuehrt: "1750-01-01", geschuetzt: true } }
+  - { id: art_eiche, table: baumart, created_at: "2025-01-10 08:00:01.000Z", values: { name: Eiche, hoehe_max: 35, geschuetzt: false } }
+instances:
+  # An L-shaped area: the v3 vertex mean (7.64, 51.97) is not where core.geo puts the point on the surface.
+  - id: fl1
+    workflow: flaeche
+    status: active
+    stage: aktiv
+    created_by: verwaltung1
+    created_at: "2025-02-01 09:00:00.000Z"
+    geometry: { type: Polygon, coordinates: [[[7.6, 51.96], [7.7, 51.96], [7.7, 51.97], [7.62, 51.97], [7.62, 52.0], [7.6, 52.0], [7.6, 51.96]]] }
+    centroid: { lat: 51.9754, lng: 7.6367 }
+    log:
+      - { field: name, value: Südpark, observer: verwaltung1, phenomenon_time: "2025-02-01 09:00:00.000Z", recorded_at: "2025-02-01 09:00:01.000Z", submission_id: s_fl1_a }
+      - { field: pflegeplan, value: Rasen zweimal mähen, observer: verwaltung1, phenomenon_time: "2025-02-01 09:00:00.000Z", recorded_at: "2025-02-01 09:00:01.000Z", submission_id: s_fl1_a }
+      - { field: pflegeplan, value: Rasen dreimal mähen, observer: verwaltung1, phenomenon_time: "2025-06-01 07:00:00.000Z", recorded_at: "2025-06-01 07:00:05.000Z", submission_id: s_fl1_b }
+  - id: b1
+    workflow: baum
+    status: active
+    stage: erfasst
+    created_by: anna
+    created_at: "2025-03-01 10:00:00.000Z"
+    geometry: { type: Point, coordinates: [7.63, 51.961, 61.5] }
+    centroid: { lat: 51.961, lng: 7.63 }
+    log:
+      - { system: geometry, value: { type: Point, coordinates: [7.63, 51.961, 61.5] }, observer: anna, phenomenon_time: "2025-03-01 10:00:00.000Z", recorded_at: "2025-03-01 10:00:02.000Z", submission_id: s_b1_a }
+      - { field: vitalitaet, value: "2", observer: anna, phenomenon_time: "2025-03-01 10:00:00.000Z", recorded_at: "2025-03-01 10:00:02.000Z", submission_id: s_b1_a }
+      - { field: hoehe_m, value: "12.5", observer: anna, phenomenon_time: "2025-03-01 10:00:00.000Z", recorded_at: "2025-03-01 10:00:02.000Z", submission_id: s_b1_a }
+      - { field: art, value: Linde, observer: anna, phenomenon_time: "2025-03-01 10:00:00.000Z", recorded_at: "2025-03-01 10:00:02.000Z", submission_id: s_b1_a }
+      - { field: flaeche_ref, value: ["fl1"], observer: anna, phenomenon_time: "2025-03-01 10:00:00.000Z", recorded_at: "2025-03-01 10:00:02.000Z", submission_id: s_b1_a }
+      # Offline device: recorded on day 5, observed on day 3 (the phenomenon time is kept, the order is the recording's).
+      - { field: vitalitaet, value: "3", observer: bernd, phenomenon_time: "2025-03-03 14:00:00.000Z", recorded_at: "2025-03-05 08:00:00.000Z", submission_id: s_b1_b }
+      # NFD "Fäulnis"-style text: v4 stores NFC.
+      - { field: befund, value: "Pilzbefall am Stämmling", observer: bernd, phenomenon_time: "2025-03-03 14:00:00.000Z", recorded_at: "2025-03-05 08:00:00.000Z", submission_id: s_b1_b }
+      - { system: stage, value: kontrolliert, observer: bernd, phenomenon_time: "2025-03-03 14:00:00.000Z", recorded_at: "2025-03-05 08:00:00.000Z", submission_id: s_b1_b }
+      - { field: massnahmen, value: [Fällen, Schnitt], observer: anna, phenomenon_time: "2025-03-07 09:00:00.000Z", recorded_at: "2025-03-07 09:00:01.000Z", submission_id: s_b1_c }
+      - { field: kinder, value: ["m1", "m2"], observer: anna, phenomenon_time: "2025-03-07 09:00:00.000Z", recorded_at: "2025-03-07 09:00:01.000Z", submission_id: s_b1_c }
+      - { field: kontrolldatum, value: "2025-03-07", observer: anna, phenomenon_time: "2025-03-07 09:00:00.000Z", recorded_at: "2025-03-07 09:00:01.000Z", submission_id: s_b1_c }
+      - { field: kontrollzeit, value: "2025-03-07 09:30:00.000Z", observer: anna, phenomenon_time: "2025-03-07 09:00:00.000Z", recorded_at: "2025-03-07 09:00:01.000Z", submission_id: s_b1_c }
+      - { field: foto, value: ["foto1.jpg"], observer: anna, phenomenon_time: "2025-03-07 09:00:00.000Z", recorded_at: "2025-03-07 09:00:01.000Z", submission_id: s_b1_c }
+      # Maßnahme m2 is taken off the list later; m1 stays.
+      - { field: kinder, value: ["m1"], observer: anna, phenomenon_time: "2025-04-01 09:00:00.000Z", recorded_at: "2025-04-01 09:00:01.000Z", submission_id: s_b1_d }
+      - { field: vitalitaet, value: "1", observer: anna, phenomenon_time: "2025-04-01 09:00:00.000Z", recorded_at: "2025-04-01 09:00:01.000Z", submission_id: s_b1_d }
+      # The tree moved: a position in the log (system field geometry).
+      - { system: geometry, value: { type: Point, coordinates: [7.6305, 51.9612, 62.0] }, observer: anna, phenomenon_time: "2025-04-01 09:00:00.000Z", recorded_at: "2025-04-01 09:00:01.000Z", submission_id: s_b1_d }
+  - id: b2
+    workflow: baum
+    status: archived
+    stage: erledigt
+    created_by: anna
+    created_at: "2025-03-02 11:00:00.000Z"
+    geometry: { type: Point, coordinates: [7.631, 51.962] }
+    log: []
+  # No position: v4 features need one, so the instance is reported and left out.
+  - id: b3
+    workflow: baum
+    status: active
+    stage: erfasst
+    created_at: "2025-03-03 11:00:00.000Z"
+    log:
+      - { field: vitalitaet, value: "1", recorded_at: "2025-03-03 11:00:00.000Z", submission_id: s_b3_a }
+  - id: m1
+    workflow: massnahme
+    status: active
+    stage: offen
+    created_by: bauhof1
+    created_at: "2025-03-07 09:00:02.000Z"
+    geometry: { type: Point, coordinates: [7.63, 51.961] }
+    log:
+      - { field: art, value: Fällen, observer: bauhof1, phenomenon_time: "2025-03-07 09:00:02.000Z", recorded_at: "2025-03-07 09:00:03.000Z", submission_id: s_m1_a }
+  - id: m2
+    workflow: massnahme
+    status: completed
+    stage: offen
+    created_by: bauhof1
+    created_at: "2025-03-07 09:00:04.000Z"
+    geometry: { type: Point, coordinates: [7.63, 51.961] }
+    log:
+      - { field: art, value: Schnitt, observer: bauhof1, phenomenon_time: "2025-03-07 09:00:04.000Z", recorded_at: "2025-03-07 09:00:05.000Z", submission_id: s_m2_a }
+  - id: l1
+    workflow: leitung
+    status: active
+    stage: bestand
+    created_at: "2025-03-08 08:00:00.000Z"
+    geometry: { type: LineString, coordinates: [[7.6, 51.96, 55], [7.61, 51.965, 56]] }
+    log:
+      - { field: bezeichnung, value: Hauptleitung, recorded_at: "2025-03-08 08:00:00.000Z", submission_id: s_l1_a }
+  - id: ghost1
+    workflow: ghost
+    log: []

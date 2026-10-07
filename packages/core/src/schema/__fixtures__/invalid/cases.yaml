@@ -1,0 +1,122 @@
+# Negative fixtures. Each case: a name, the expected issue path (dot-joined) and a whole file.
+- name: schema version unknown
+  path: schema
+  file: { schema: ueberblick/9, template: { key: a, version: 1.0.0 } }
+- name: template without version
+  path: template.version
+  file: { schema: ueberblick/1, template: { key: a } }
+- name: template version not semver
+  path: template.version
+  file: { schema: ueberblick/1, template: { key: a, version: '1.0' } }
+- name: uppercase type key
+  path: types.Baum
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    types: { Baum: { label: Baum, properties: {} } }
+- name: property key starting with a digit
+  path: types.baum.properties.1abc
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    types: { baum: { label: Baum, properties: { 1abc: { type: text } } } }
+- name: unknown property type
+  path: types.baum.properties.x.type
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    types: { baum: { label: Baum, properties: { x: { type: colour } } } }
+- name: select without options
+  path: types.baum.properties.x.options
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    types: { baum: { label: Baum, properties: { x: { type: select } } } }
+- name: options on a text property
+  path: types.baum.properties.x.options
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    types: { baum: { label: Baum, properties: { x: { type: text, options: { a: A } } } } }
+- name: reference without target
+  path: types.baum.properties.x.to
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    types: { baum: { label: Baum, properties: { x: { type: reference } } } }
+- name: entities as a list
+  path: types
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    types: [{ key: baum, label: Baum, properties: {} }]
+- name: primary geometry names a property that does not exist
+  path: types.baum.geometry
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    types: { baum: { label: Baum, geometry: sphere, properties: {} } }
+- name: geometry default is not GeoJSON
+  path: types.baum.properties.g.default
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    types:
+      {
+        baum:
+          { label: Baum, properties: { g: { type: geometry, default: { type: Point, coordinates: [1] } } } },
+      }
+- name: unknown renderer
+  path: views.karte.layers.l.renderer
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    views: { karte: { source: { type: baum }, layers: { l: { renderer: cesium-3d } } } }
+- name: layer without renderer
+  path: views.karte.layers.l.renderer
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    views: { karte: { source: { type: baum }, layers: { l: {} } } }
+- name: view without source
+  path: views.karte.source
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    views: { karte: { label: Karte } }
+- name: task without on
+  path: tasks.t.on
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    tasks: { t: { label: T } }
+- name: then step with an otherwise other than true
+  path: tasks.t.then.0.otherwise
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    tasks: { t: { label: T, on: $none, then: [{ set: { a: 1 }, otherwise: false }] } }
+- name: unknown key on a form field
+  path: tasks.t.form.f
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    tasks: { t: { label: T, on: $none, form: { f: { visible: true } } } }
+- name: role app views is a list, not a keyed map
+  path: roles.r.app.views
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    roles: { r: { label: R, app: { views: [karte] } } }
+- name: empty localized string object
+  path: types.baum.label
+  file:
+    schema: ueberblick/1
+    template: { key: a, version: 1.0.0 }
+    types: { baum: { label: {}, properties: {} } }
+- name: overlay extends without version range
+  path: extends
+  file: { schema: ueberblick/1, extends: baumkataster }
+- name: overlay hide is not a key path
+  path: hide.0
+  file: { schema: ueberblick/1, extends: baumkataster@1, hide: ['Tasks.Melden'] }

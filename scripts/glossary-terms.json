@@ -1,0 +1,22 @@
+{
+  "$comment": "Banned v3 vocabulary (docs/01-glossary.md). 'words' is a lowercase word sequence; identifiers (camelCase, PascalCase, snake_case, kebab-case) are split into words before matching, so 'ToolConfigSchema' hits 'tool config'. A trailing s is accepted; a trailing * means any word starting with it. Changing this list needs the owner. 'allow' lists legitimate uses as { file (path prefix), words, reason }.",
+  "banned": [
+    { "words": "workflow instance", "use": "feature" },
+    { "words": "instance id", "use": "featureId / feature_id" },
+    { "words": "field def", "use": "property" },
+    { "words": "field value", "use": "observation (form inputs are form values)" },
+    { "words": "workflow field", "use": "observation" },
+    { "words": "submission", "use": "run" },
+    { "words": "automation", "use": "rule" },
+    { "words": "tool config", "use": "view / tool / field" },
+    { "words": "tool step", "use": "field / tool" },
+    { "words": "marker categor*", "use": "feature type" },
+    { "words": "instance link", "use": "edges" },
+    { "words": "pocketbase", "use": "server adapter" },
+    { "words": "goja", "use": "core" },
+    { "words": "case id", "use": "featureId" },
+    { "words": "case store", "use": "feature store / observations" },
+    { "words": "case log", "use": "observations" }
+  ],
+  "allow": []
+}

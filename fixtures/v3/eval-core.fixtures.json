@@ -1,0 +1,466 @@
+{
+	"_comment": "Runtime-agnostic corpus for eval-core. Loaded by src/lib/workflow-model/eval-core.spec.ts (vitest) AND, in Step 2, by a PocketBase/Goja hook test — both must agree. Context is pure DATA: a harness builds resolve = (ref) => ctx.values[ref] ?? []. `expect` is the tri-state result of evaluateCondition; conditionPasses must equal (expect === 'pass').",
+	"now": 1700000000000,
+	"cases": [
+		{
+			"name": "empty all → pass",
+			"condition": { "all": [] },
+			"ctx": {},
+			"expect": "pass"
+		},
+		{
+			"name": "empty any → fail",
+			"condition": { "any": [] },
+			"ctx": {},
+			"expect": "fail"
+		},
+		{
+			"name": "null condition → pass",
+			"condition": null,
+			"ctx": {},
+			"expect": "pass"
+		},
+		{
+			"name": "bare clause array = implicit AND, all pass",
+			"condition": [
+				{ "kind": "field", "field_def_id": "f_p", "op": "equals", "value": "high" },
+				{ "kind": "field", "field_def_id": "f_s", "op": "is_not_empty" }
+			],
+			"ctx": { "values": { "f_p": ["high"], "f_s": ["x"] } },
+			"expect": "pass"
+		},
+		{
+			"name": "legacy kind-less clause treated as field",
+			"condition": { "field_def_id": "f_p", "op": "equals", "value": "high" },
+			"ctx": { "values": { "f_p": ["high"] } },
+			"expect": "pass"
+		},
+		{
+			"name": "field equals fail",
+			"condition": { "kind": "field", "field_def_id": "f_p", "op": "equals", "value": "low" },
+			"ctx": { "values": { "f_p": ["high"] } },
+			"expect": "fail"
+		},
+		{
+			"name": "field equals NFD-stored vs NFC-query umlaut → pass",
+			"condition": { "kind": "field", "field_def_id": "f_p", "op": "equals", "value": "geprüft" },
+			"ctx": { "values": { "f_p": ["geprüft"] } },
+			"expect": "pass"
+		},
+		{
+			"name": "field contains case-insensitive substring",
+			"condition": { "kind": "field", "field_def_id": "f_n", "op": "contains", "value": "BERLIN" },
+			"ctx": { "values": { "f_n": ["Berlin Mitte"] } },
+			"expect": "pass"
+		},
+		{
+			"name": "field includes membership in JSON array → pass",
+			"condition": { "kind": "field", "field_def_id": "f_t", "op": "includes", "value": "b" },
+			"ctx": { "values": { "f_t": ["[\"a\",\"b\",\"c\"]"] } },
+			"expect": "pass"
+		},
+		{
+			"name": "field not_includes membership absent → pass",
+			"condition": { "kind": "field", "field_def_id": "f_t", "op": "not_includes", "value": "z" },
+			"ctx": { "values": { "f_t": ["[\"a\",\"b\"]"] } },
+			"expect": "pass"
+		},
+		{
+			"name": "field is_empty with empty slice → pass",
+			"condition": { "kind": "field", "field_def_id": "f_missing", "op": "is_empty" },
+			"ctx": { "values": {} },
+			"expect": "pass"
+		},
+		{
+			"name": "field is_empty with empty string value → pass",
+			"condition": { "kind": "field", "field_def_id": "f_p", "op": "is_empty" },
+			"ctx": { "values": { "f_p": [""] } },
+			"expect": "pass"
+		},
+		{
+			"name": "field is_not_empty with value → pass",
+			"condition": { "kind": "field", "field_def_id": "f_p", "op": "is_not_empty" },
+			"ctx": { "values": { "f_p": ["x"] } },
+			"expect": "pass"
+		},
+		{
+			"name": "field gte numeric → pass",
+			"condition": { "kind": "field", "field_def_id": "f_score", "op": "gte", "value": "10" },
+			"ctx": { "values": { "f_score": ["12"] } },
+			"expect": "pass"
+		},
+		{
+			"name": "field lt non-numeric value → fail (no coercion)",
+			"condition": { "kind": "field", "field_def_id": "f_score", "op": "lt", "value": "10" },
+			"ctx": { "values": { "f_score": ["abc"] } },
+			"expect": "fail"
+		},
+		{
+			"name": "field gte with value_type date → pass",
+			"condition": {
+				"kind": "field",
+				"field_def_id": "f_due",
+				"op": "gte",
+				"value": "2020-01-01T00:00:00Z",
+				"value_type": "date"
+			},
+			"ctx": { "values": { "f_due": ["2021-06-15T00:00:00Z"] } },
+			"expect": "pass"
+		},
+		{
+			"name": "older_than_days on $updated → pass",
+			"condition": {
+				"kind": "field",
+				"field_def_id": "$updated",
+				"op": "older_than_days",
+				"value": "30"
+			},
+			"ctx": { "values": { "$updated": ["2020-01-01T00:00:00Z"] }, "now": 1700000000000 },
+			"expect": "pass"
+		},
+		{
+			"name": "newer_than_days on $updated → fail (too old)",
+			"condition": {
+				"kind": "field",
+				"field_def_id": "$updated",
+				"op": "newer_than_days",
+				"value": "30"
+			},
+			"ctx": { "values": { "$updated": ["2020-01-01T00:00:00Z"] }, "now": 1700000000000 },
+			"expect": "fail"
+		},
+		{
+			"name": "older_than_days missing now → invalid",
+			"condition": {
+				"kind": "field",
+				"field_def_id": "$updated",
+				"op": "older_than_days",
+				"value": "30"
+			},
+			"ctx": { "values": { "$updated": ["2020-01-01T00:00:00Z"] }, "noNow": true },
+			"expect": "invalid"
+		},
+		{
+			"name": "stage equals single key → pass",
+			"condition": { "kind": "stage", "op": "equals", "stage_keys": ["review"] },
+			"ctx": { "currentStageKey": "review" },
+			"expect": "pass"
+		},
+		{
+			"name": "stage in list → pass",
+			"condition": { "kind": "stage", "op": "in", "stage_keys": ["review", "rework"] },
+			"ctx": { "currentStageKey": "rework" },
+			"expect": "pass"
+		},
+		{
+			"name": "stage missing context → invalid",
+			"condition": { "kind": "stage", "op": "in", "stage_keys": ["review"] },
+			"ctx": {},
+			"expect": "invalid"
+		},
+		{
+			"name": "role empty = all → pass",
+			"condition": { "kind": "role", "role_ids": [] },
+			"ctx": {},
+			"expect": "pass"
+		},
+		{
+			"name": "role match → pass",
+			"condition": { "kind": "role", "role_ids": ["r_a", "r_b"] },
+			"ctx": { "participantRoleIds": ["r_b"] },
+			"expect": "pass"
+		},
+		{
+			"name": "role required, none present → fail (not invalid)",
+			"condition": { "kind": "role", "role_ids": ["r_a"] },
+			"ctx": { "participantRoleIds": [] },
+			"expect": "fail"
+		},
+		{
+			"name": "ownership self match → pass",
+			"condition": { "kind": "ownership", "value": "self" },
+			"ctx": { "participantId": "p1", "instanceCreatedBy": "p1" },
+			"expect": "pass"
+		},
+		{
+			"name": "ownership self mismatch → fail",
+			"condition": { "kind": "ownership", "value": "self" },
+			"ctx": { "participantId": "p1", "instanceCreatedBy": "p2" },
+			"expect": "fail"
+		},
+		{
+			"name": "ownership any → pass",
+			"condition": { "kind": "ownership", "value": "any" },
+			"ctx": {},
+			"expect": "pass"
+		},
+		{
+			"name": "instance_status match → pass",
+			"condition": { "kind": "instance_status", "status": "active" },
+			"ctx": { "instanceStatus": "active" },
+			"expect": "pass"
+		},
+		{
+			"name": "instance_status missing context → invalid (fail-closed)",
+			"condition": { "kind": "instance_status", "status": "active" },
+			"ctx": {},
+			"expect": "invalid"
+		},
+		{
+			"name": "field_to_field gt → pass",
+			"condition": {
+				"kind": "field_to_field",
+				"field_def_id": "f_actual",
+				"op": "gt",
+				"other_field_def_id": "f_target"
+			},
+			"ctx": { "values": { "f_actual": ["100"], "f_target": ["50"] } },
+			"expect": "pass"
+		},
+		{
+			"name": "unknown clause kind → invalid",
+			"condition": { "kind": "made_up", "foo": "bar" },
+			"ctx": {},
+			"expect": "invalid"
+		},
+		{
+			"name": "not(pass) → fail",
+			"condition": {
+				"not": { "kind": "field", "field_def_id": "f_p", "op": "equals", "value": "high" }
+			},
+			"ctx": { "values": { "f_p": ["high"] } },
+			"expect": "fail"
+		},
+		{
+			"name": "not(fail) → pass",
+			"condition": {
+				"not": { "kind": "field", "field_def_id": "f_p", "op": "equals", "value": "low" }
+			},
+			"ctx": { "values": { "f_p": ["high"] } },
+			"expect": "pass"
+		},
+		{
+			"name": "not(invalid) → invalid (NEVER flips)",
+			"condition": { "not": { "kind": "instance_status", "status": "active" } },
+			"ctx": {},
+			"expect": "invalid"
+		},
+		{
+			"name": "all with one invalid sibling → invalid (even past a pass)",
+			"condition": {
+				"all": [
+					{ "kind": "field", "field_def_id": "f_p", "op": "equals", "value": "high" },
+					{ "kind": "instance_status", "status": "active" }
+				]
+			},
+			"ctx": { "values": { "f_p": ["high"] } },
+			"expect": "invalid"
+		},
+		{
+			"name": "any with one invalid sibling → invalid (even past a pass)",
+			"condition": {
+				"any": [
+					{ "kind": "field", "field_def_id": "f_p", "op": "equals", "value": "high" },
+					{ "kind": "instance_status", "status": "active" }
+				]
+			},
+			"ctx": { "values": { "f_p": ["high"] } },
+			"expect": "invalid"
+		},
+		{
+			"name": "aggregate all over history → fail (one element differs)",
+			"condition": {
+				"kind": "field",
+				"field_def_id": "f_p",
+				"op": "equals",
+				"value": "ok",
+				"aggregate": "all"
+			},
+			"ctx": { "values": { "f_p": ["ok", "ok", "bad"] } },
+			"expect": "fail"
+		},
+		{
+			"name": "aggregate any over history → pass (one element matches)",
+			"condition": {
+				"kind": "field",
+				"field_def_id": "f_p",
+				"op": "equals",
+				"value": "bad",
+				"aggregate": "any"
+			},
+			"ctx": { "values": { "f_p": ["ok", "ok", "bad"] } },
+			"expect": "pass"
+		},
+		{
+			"name": "nested escalate example: high AND (open OR reopened) AND NOT assignee empty",
+			"condition": {
+				"all": [
+					{ "kind": "field", "field_def_id": "f_priority", "op": "equals", "value": "high" },
+					{
+						"any": [
+							{ "kind": "field", "field_def_id": "f_status", "op": "equals", "value": "open" },
+							{ "kind": "field", "field_def_id": "f_status", "op": "equals", "value": "reopened" }
+						]
+					},
+					{ "not": { "kind": "field", "field_def_id": "f_assignee", "op": "is_empty" } }
+				]
+			},
+			"ctx": {
+				"values": {
+					"f_priority": ["high"],
+					"f_status": ["reopened"],
+					"f_assignee": ["p7"]
+				}
+			},
+			"expect": "pass"
+		},
+		{
+			"name": "nested escalate example: fails when assignee empty",
+			"condition": {
+				"all": [
+					{ "kind": "field", "field_def_id": "f_priority", "op": "equals", "value": "high" },
+					{
+						"any": [
+							{ "kind": "field", "field_def_id": "f_status", "op": "equals", "value": "open" },
+							{ "kind": "field", "field_def_id": "f_status", "op": "equals", "value": "reopened" }
+						]
+					},
+					{ "not": { "kind": "field", "field_def_id": "f_assignee", "op": "is_empty" } }
+				]
+			},
+			"ctx": {
+				"values": { "f_priority": ["high"], "f_status": ["open"], "f_assignee": [""] }
+			},
+			"expect": "fail"
+		},
+		{
+			"name": "related any: one child matches → pass",
+			"condition": {
+				"kind": "related",
+				"via": "f_inspections",
+				"condition": { "kind": "instance_status", "status": "active" }
+			},
+			"ctx": {
+				"related": {
+					"f_inspections": [{ "instanceStatus": "completed" }, { "instanceStatus": "active" }]
+				}
+			},
+			"expect": "pass"
+		},
+		{
+			"name": "related any: empty set → fail",
+			"condition": { "kind": "related", "via": "f_inspections" },
+			"ctx": { "related": { "f_inspections": [] } },
+			"expect": "fail"
+		},
+		{
+			"name": "related none (dedup gate): no active child → pass",
+			"condition": {
+				"kind": "related",
+				"via": "f_inspections",
+				"quantifier": "none",
+				"condition": { "kind": "instance_status", "status": "active" }
+			},
+			"ctx": { "related": { "f_inspections": [{ "instanceStatus": "completed" }] } },
+			"expect": "pass"
+		},
+		{
+			"name": "related none (parent-close gate): active child blocks → fail",
+			"condition": {
+				"kind": "related",
+				"via": "f_damages",
+				"quantifier": "none",
+				"condition": { "kind": "instance_status", "status": "active" }
+			},
+			"ctx": {
+				"related": {
+					"f_damages": [{ "instanceStatus": "active" }, { "instanceStatus": "completed" }]
+				}
+			},
+			"expect": "fail"
+		},
+		{
+			"name": "related none: empty set is vacuously pass",
+			"condition": {
+				"kind": "related",
+				"via": "f_damages",
+				"quantifier": "none",
+				"condition": { "kind": "instance_status", "status": "active" }
+			},
+			"ctx": { "related": { "f_damages": [] } },
+			"expect": "pass"
+		},
+		{
+			"name": "related all: every child in end stage → pass (field + stage in child ctx)",
+			"condition": {
+				"kind": "related",
+				"via": "f_checks",
+				"quantifier": "all",
+				"condition": {
+					"all": [
+						{ "kind": "stage", "op": "equals", "stage_keys": ["done"] },
+						{ "kind": "field", "field_def_id": "f_result", "op": "is_not_empty" }
+					]
+				}
+			},
+			"ctx": {
+				"related": {
+					"f_checks": [
+						{ "currentStageKey": "done", "values": { "f_result": ["ok"] } },
+						{ "currentStageKey": "done", "values": { "f_result": ["defect"] } }
+					]
+				}
+			},
+			"expect": "pass"
+		},
+		{
+			"name": "related all: empty set is vacuously pass",
+			"condition": { "kind": "related", "via": "f_checks", "quantifier": "all" },
+			"ctx": { "related": { "f_checks": [] } },
+			"expect": "pass"
+		},
+		{
+			"name": "related without resolveRelated seam → invalid (fail-closed)",
+			"condition": { "kind": "related", "via": "f_inspections" },
+			"ctx": {},
+			"expect": "invalid"
+		},
+		{
+			"name": "related unresolvable edge (unknown via) → invalid",
+			"condition": { "kind": "related", "via": "f_unknown" },
+			"ctx": { "related": { "f_inspections": [] } },
+			"expect": "invalid"
+		},
+		{
+			"name": "not(related invalid) stays invalid — never flips",
+			"condition": { "not": { "kind": "related", "via": "f_x" } },
+			"ctx": {},
+			"expect": "invalid"
+		},
+		{
+			"name": "related nested inside all with sibling field clause",
+			"condition": {
+				"all": [
+					{
+						"kind": "field",
+						"field_def_id": "f_last_inspection",
+						"op": "older_than_days",
+						"value": "730",
+						"value_type": "date"
+					},
+					{
+						"kind": "related",
+						"via": "f_inspections",
+						"quantifier": "none",
+						"condition": { "kind": "instance_status", "status": "active" }
+					}
+				]
+			},
+			"ctx": {
+				"values": { "f_last_inspection": ["2020-01-01T00:00:00Z"] },
+				"related": { "f_inspections": [{ "instanceStatus": "completed" }] }
+			},
+			"expect": "pass"
+		}
+	]
+}

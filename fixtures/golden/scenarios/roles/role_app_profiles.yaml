@@ -1,0 +1,48 @@
+scenario: role_app_profiles
+title: "H3. Two roles get different apps - home view, views, tools, shortcuts - and see different data through them"
+foundations: [F6, F7, F10]
+capabilities: [h3_role_app, visible_when, permission_see]
+given:
+  project: projects/musterstadt-plain.yaml
+  include: [seeds/musterstadt-geo.yaml]
+  now: "2026-05-01T08:00:00Z"
+  features:
+    t_out: { properties: { zustaendig: bernd, faellig_am: "2026-04-15" } }   # merged into the seed: assigned to the works yard, overdue
+when:
+  - id: s1
+    kind: app_profile
+    actor: anna
+  - id: s2
+    kind: app_profile
+    actor: bernd
+  - id: s3                                                # the inspector's "my tasks" list: t_in, assigned to anna and overdue
+    kind: view
+    view: meine_aufgaben
+    actor: anna
+    limit_properties: [stage, intern_notiz]
+  - id: s4
+    kind: view
+    view: meine_aufgaben
+    actor: bernd
+    limit_properties: [stage, intern_notiz]
+  - id: s5                                                # a view outside the role's profile is not reachable
+    kind: view
+    view: alle_baeume
+    actor: bernd
+then:
+  steps:
+    s1:
+      profile:
+        home: karte
+        views: [karte, meine_aufgaben]
+        tools: [measure, search, photo]
+        shortcuts: [kontrolle]
+    s2:
+      profile:
+        home: meine_aufgaben
+        views: [meine_aufgaben]
+        tools: [photo]
+        shortcuts: [massnahme_erledigen]
+    s3: { rows: { t_in: { stage: erfasst, intern_notiz: Wurzelschaden prüfen } } }
+    s4: { rows: { t_out: { stage: erfasst } }, absent_properties: [intern_notiz] }
+    s5: { outcome: refused, refusal: not_permitted, reason: view_not_in_role_profile }

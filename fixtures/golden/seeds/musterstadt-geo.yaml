@@ -1,0 +1,56 @@
+# Shared seed for baumkataster scenarios. Included by `given.include`. Seeded features arrive as
+# import runs (actor kind import), so their observations and derived edges exist before `when`.
+#
+# Geometry (WGS84, lon/lat):
+#   park = square 7.100..7.110 x 50.730..50.740 with a square hole 7.104..7.106 x 50.734..50.736
+#   t_in       inside the park, outside the hole   -> within(park) true
+#   t_hole     inside the hole                      -> within(park) false, disjoint
+#   t_boundary exactly on the park's west edge      -> within false, intersects true
+#   t_out      far outside                          -> no edge
+participants:
+  anna: { roles: [kontrolle] }
+  bernd: { roles: [bauhof] }
+  vera: { roles: [verwaltung] }
+features:
+  park:
+    type: flaeche
+    properties:
+      name: Spielplatz Nord
+      geometrie:
+        type: Polygon
+        coordinates:
+          - [[7.100, 50.730], [7.110, 50.730], [7.110, 50.740], [7.100, 50.740], [7.100, 50.730]]
+          - [[7.104, 50.734], [7.104, 50.736], [7.106, 50.736], [7.106, 50.734], [7.104, 50.734]]
+  art_linde:
+    type: baumart
+    properties: { name_de: Linde, name_lat: Tilia }
+  t_in:
+    type: baum
+    properties:
+      geometrie: { type: Point, coordinates: [7.102, 50.732] }
+      art: art_linde
+      stage: erfasst
+      vitalitaet: "v2"
+      befund: unauffällig
+      zustaendig: anna
+      faellig_am: "2026-04-01"
+      intern_notiz: Wurzelschaden prüfen
+  t_hole:
+    type: baum
+    properties:
+      geometrie: { type: Point, coordinates: [7.105, 50.735] }
+      stage: erfasst
+      vitalitaet: "v1"
+  t_boundary:
+    type: baum
+    properties:
+      geometrie: { type: Point, coordinates: [7.100, 50.735] }
+      stage: erfasst
+      vitalitaet: "v1"
+  t_out:
+    type: baum
+    properties:
+      geometrie: { type: Point, coordinates: [7.120, 50.750] }
+      stage: erfasst
+      vitalitaet: "v4"
+      faellig_am: "2026-06-01"

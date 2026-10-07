@@ -1,0 +1,50 @@
+scenario: features_without_geometry
+title: "Features without geometry are first-class: created, listed, referenced, absent from bbox queries and the spatial index"
+foundations: [F4, F9, F11]
+capabilities: [no_geometry, reference]
+given:
+  project: projects/musterstadt-plain.yaml
+  include: [seeds/musterstadt-geo.yaml]
+  now: "2026-05-01T08:00:00Z"
+when:
+  - id: s1                                # a lookup entry, like a species table
+    kind: run
+    task: baumart_anlegen
+    actor: vera
+    creates: $new:art_eiche
+    input: { name_de: Eiche, name_lat: Quercus }
+  - id: s2                                # a tree references it
+    kind: run
+    task: erfassen
+    actor: vera
+    creates: $new:t_neu
+    input: { geometrie: { type: Point, coordinates: [7.1015, 50.7315] }, art: $new:art_eiche, vitalitaet: "v1" }
+  - id: s3
+    kind: view
+    view: sync_scope
+    actor: vera
+    type: baumart
+    bbox: [7.0, 50.6, 7.3, 50.8]
+  - id: s4
+    kind: view
+    view: sync_scope
+    actor: vera
+    type: baumart
+  - id: s5                                # a tree needs a geometry (its type requires it), a species does not
+    kind: run
+    task: erfassen
+    actor: vera
+    creates: $new:t_ohne
+    input: { vitalitaet: "v1", art: $new:art_eiche }
+then:
+  steps:
+    s1: { outcome: accepted }
+    s2: { outcome: accepted }
+    s3: { ids: [] }                       # the bbox query only ever returns features that have a geometry
+    s4: { ids: [art_linde, $new:art_eiche] }
+    s5: { outcome: refused, refusal: geometry_required, no_trace: true }
+  features:
+    art_eiche: { type: baumart, has_geometry: false, in_spatial_index: false }
+    t_neu: { properties: { art: art_eiche } }
+  edges:
+    - { from: t_neu, relation: art, to: art_eiche, derived: false }

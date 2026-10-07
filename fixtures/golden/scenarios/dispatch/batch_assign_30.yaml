@@ -1,0 +1,76 @@
+scenario: batch_assign_30
+title: "H2. An admin creates 30 work orders and assigns 10 each to three technicians in one atomic batch; the doorbell rings once"
+foundations: [F3, F4, F6, F12]
+capabilities: [h2_atomic_batch, reference]
+given:
+  project: projects/stadtwerke-meldungen.yaml
+  include: [seeds/stadtwerke.yaml]
+  participants:
+    hugo: { roles: [handwerker] }
+  now: "2026-05-01T08:00:00Z"
+when:
+  - id: s1
+    kind: batch
+    atomic: true                        # one request, many runs, one transaction, one contiguous seq range
+    runs:
+      - { task: einsatz_anlegen, actor: sabine, creates: $new:e01, input: { titel: Auftrag 01, zustaendig: hans } }
+      - { task: einsatz_anlegen, actor: sabine, creates: $new:e02, input: { titel: Auftrag 02, zustaendig: hans } }
+      - { task: einsatz_anlegen, actor: sabine, creates: $new:e03, input: { titel: Auftrag 03, zustaendig: hans } }
+      - { task: einsatz_anlegen, actor: sabine, creates: $new:e04, input: { titel: Auftrag 04, zustaendig: hans } }
+      - { task: einsatz_anlegen, actor: sabine, creates: $new:e05, input: { titel: Auftrag 05, zustaendig: hans } }
+      - { task: einsatz_anlegen, actor: sabine, creates: $new:e06, input: { titel: Auftrag 06, zustaendig: hans } }
+      - { task: einsatz_anlegen, actor: sabine, creates: $new:e07, input: { titel: Auftrag 07, zustaendig: hans } }
+      - { task: einsatz_anlegen, actor: sabine, creates: $new:e08, input: { titel: Auftrag 08, zustaendig: hans } }
+      - { task: einsatz_anlegen, actor: sabine, creates: $new:e09, input: { titel: Auftrag 09, zustaendig: hans } }
+      - { task: einsatz_anlegen, actor: sabine, creates: $new:e10, input: { titel: Auftrag 10, zustaendig: hans } }
+      - { task: einsatz_anlegen, actor: sabine, creates: $new:e11, input: { titel: Auftrag 11, zustaendig: hilde } }
+      - { task: einsatz_anlegen, actor: sabine, creates: $new:e12, input: { titel: Auftrag 12, zustaendig: hilde } }
+      - { task: einsatz_anlegen, actor: sabine, creates: $new:e13, input: { titel: Auftrag 13, zustaendig: hilde } }
+      - { task: einsatz_anlegen, actor: sabine, creates: $new:e14, input: { titel: Auftrag 14, zustaendig: hilde } }
+      - { task: einsatz_anlegen, actor: sabine, creates: $new:e15, input: { titel: Auftrag 15, zustaendig: hilde } }
+      - { task: einsatz_anlegen, actor: sabine, creates: $new:e16, input: { titel: Auftrag 16, zustaendig: hilde } }
+      - { task: einsatz_anlegen, actor: sabine, creates: $new:e17, input: { titel: Auftrag 17, zustaendig: hilde } }
+      - { task: einsatz_anlegen, actor: sabine, creates: $new:e18, input: { titel: Auftrag 18, zustaendig: hilde } }
+      - { task: einsatz_anlegen, actor: sabine, creates: $new:e19, input: { titel: Auftrag 19, zustaendig: hilde } }
+      - { task: einsatz_anlegen, actor: sabine, creates: $new:e20, input: { titel: Auftrag 20, zustaendig: hilde } }
+      - { task: einsatz_anlegen, actor: sabine, creates: $new:e21, input: { titel: Auftrag 21, zustaendig: hugo } }
+      - { task: einsatz_anlegen, actor: sabine, creates: $new:e22, input: { titel: Auftrag 22, zustaendig: hugo } }
+      - { task: einsatz_anlegen, actor: sabine, creates: $new:e23, input: { titel: Auftrag 23, zustaendig: hugo } }
+      - { task: einsatz_anlegen, actor: sabine, creates: $new:e24, input: { titel: Auftrag 24, zustaendig: hugo } }
+      - { task: einsatz_anlegen, actor: sabine, creates: $new:e25, input: { titel: Auftrag 25, zustaendig: hugo } }
+      - { task: einsatz_anlegen, actor: sabine, creates: $new:e26, input: { titel: Auftrag 26, zustaendig: hugo } }
+      - { task: einsatz_anlegen, actor: sabine, creates: $new:e27, input: { titel: Auftrag 27, zustaendig: hugo } }
+      - { task: einsatz_anlegen, actor: sabine, creates: $new:e28, input: { titel: Auftrag 28, zustaendig: hugo } }
+      - { task: einsatz_anlegen, actor: sabine, creates: $new:e29, input: { titel: Auftrag 29, zustaendig: hugo } }
+      - { task: einsatz_anlegen, actor: sabine, creates: $new:e30, input: { titel: Auftrag 30, zustaendig: hugo } }
+  - id: s2
+    kind: view
+    view: meine_einsaetze
+    actor: hans
+  - id: s3
+    kind: view
+    view: meine_einsaetze
+    actor: hilde
+  - id: s4
+    kind: view
+    view: meine_einsaetze
+    actor: hugo
+  - id: s5                              # a technician sees only their own work orders, a case handler all 30
+    kind: view
+    view: einsaetze
+    actor: sabine
+then:
+  steps:
+    s1:
+      outcome: accepted
+      runs_accepted: 30
+      one_transaction: true
+      seq_contiguous: true              # the batch occupies one uninterrupted seq range
+      doorbell_rung: { count: 1, scope: all_devices }     # devices see the change within seconds, not minutes
+    s2: { count: 10, ids: [e01, e02, e03, e04, e05, e06, e07, e08, e09, e10] }
+    s3: { count: 10, ids: [e11, e12, e13, e14, e15, e16, e17, e18, e19, e20] }
+    s4: { count: 10, ids: [e21, e22, e23, e24, e25, e26, e27, e28, e29, e30] }
+    s5: { count: 30 }
+  features:
+    e01: { type: einsatz, has_geometry: false, properties: { zustaendig: hans, status: neu } }
+    e30: { type: einsatz, has_geometry: false, properties: { zustaendig: hugo, status: neu } }

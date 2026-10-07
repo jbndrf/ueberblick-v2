@@ -1,0 +1,4 @@
+{
+  "$comment": "MapLibre Style Spec fragment for the maplibre-2d renderer.",
+  "layers": [{ "id": "flaeche", "type": "fill", "source": "ub-geometry", "paint": { "fill-color": "#3498db", "fill-opacity": 0.25 } }]
+}

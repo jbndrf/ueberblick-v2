@@ -1,0 +1,41 @@
+scenario: derived_values_area_anchor
+title: "Fold derives bbox, geodesic area (holes subtracted) and a point-on-surface anchor, never a vertex mean"
+foundations: [F4, F11]
+capabilities: [derived_values, polygon_hole]
+given:
+  project: projects/musterstadt-plain.yaml
+  include: [seeds/musterstadt-geo.yaml]
+  now: "2026-05-01T08:00:00Z"
+  features:
+    c_form:                               # a C-shaped area: its area centroid lies in the notch, outside the polygon
+      type: flaeche
+      properties:
+        name: Hufeisenplatz
+        geometrie:
+          type: Polygon
+          coordinates:
+            - [[7.2000, 50.7000], [7.2100, 50.7000], [7.2100, 50.7020], [7.2020, 50.7020], [7.2020, 50.7080], [7.2100, 50.7080], [7.2100, 50.7100], [7.2000, 50.7100], [7.2000, 50.7000]]
+when:
+  - id: s1
+    kind: view
+    view: sync_scope
+    actor: vera
+    type: flaeche
+    limit_properties: [name]
+    include_derived: true
+then:
+  steps:
+    s1:
+      derived:
+        park:
+          area_m2: { approx: 753928, rel_tol: 0.005 }         # 785341 m2 outer minus 31414 m2 hole
+          bbox: [7.100, 50.730, 7.110, 50.740]
+          anchor_within_geometry: true
+        c_form:
+          area_m2: { approx: 408636, rel_tol: 0.005 }
+          bbox: [7.200, 50.700, 7.210, 50.710]
+          area_centroid: { lon: { approx: 7.20408, abs_tol: 0.00001 }, lat: { approx: 50.705, abs_tol: 0.00001 } }
+          anchor_within_geometry: true                        # point-on-surface, unlike the centroid which is in the notch
+          area_centroid_within_geometry: false
+        t_in:
+          anchor: { lon: 7.102, lat: 50.732 }                  # a point is its own anchor

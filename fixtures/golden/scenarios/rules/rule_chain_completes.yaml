@@ -1,0 +1,33 @@
+scenario: rule_chain_completes
+title: "One run starts a chain of three rules; every step is a system run in the same transaction, traceable through caused_by"
+foundations: [F3, F4, F5, F9]
+capabilities: [rule_chain, derived_relation, reference]
+given:
+  project: projects/stadtwerke-meldungen.yaml
+  include: [seeds/stadtwerke.yaml]
+  now: "2026-05-01T08:00:00Z"
+when:
+  - id: s1
+    kind: run
+    task: melden
+    actor: sabine
+    creates: $new:m1
+    input:
+      geometrie: { type: Point, coordinates: [7.10, 50.75] }
+      kategorie: beleuchtung
+      beschreibung: { de: Ampel ausgefallen, en: Traffic light out }
+      prioritaet: hoch
+      dringlich_begruendung: Kreuzung ohne Ampel
+then:
+  steps:
+    s1:
+      outcome: accepted
+      rule_runs:
+        - { rule: bewerten.eingang_bewerten, task: bewerten, actor_kind: system, feature: $new:m1, outcome: accepted, depth: 1, caused_by: s1 }
+        - { rule: zuweisen.bewertet_zuweisen, task: zuweisen, actor_kind: system, feature: $new:m1, outcome: accepted, depth: 2, caused_by: rule:bewerten.eingang_bewerten }
+        - { rule: benachrichtigen.zugewiesen_benachrichtigen, task: benachrichtigen, actor_kind: system, feature: $new:m1, outcome: accepted, depth: 3, caused_by: rule:zuweisen.bewertet_zuweisen }
+      one_transaction: true                 # runs, observations, fold and edges commit together with one seq range
+  features:
+    m1: { properties: { status: zugewiesen, zustaendig: hans, benachrichtigt: true, prioritaet: hoch, melder: sabine, gemeldet_am: "2026-05-01" } }
+  edges:
+    - { from: $new:m1, relation: bezirk, to: b_mitte, derived: true }      # exists before the chain reads self.bezirk

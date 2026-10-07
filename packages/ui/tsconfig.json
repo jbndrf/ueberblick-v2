@@ -1,0 +1,24 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "incremental": true,
+    "tsBuildInfoFile": "../../node_modules/.cache/tsc/ui.tsbuildinfo",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "allowJs": true,
+    "checkJs": false,
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": [
+    "../core/src/**/*.d.ts",
+    "../tools/photo/src/**/*.ts",
+    "../tools/file/src/**/*.ts",
+    "../tools/draw/src/**/*.ts",
+    "../tools/measure/src/**/*.ts",
+    "../tools/search/src/**/*.ts",
+    "src/**/*.ts",
+    "src/**/*.svelte",
+    "src/paraglide/**/*.js"
+  ],
+  "exclude": ["node_modules", "**/*.planted*", "**/*.planted/**"]
+}

@@ -1,0 +1,27 @@
+scenario: bind_unresolved_refused
+title: "A required bind with no related feature refuses the run and leaves no trace"
+foundations: [F3, F9]
+capabilities: [bind, derived_relation]
+given:
+  project: projects/musterstadt-plain.yaml
+  include: [seeds/musterstadt-geo.yaml]
+  now: "2026-05-01T08:00:00Z"
+when:
+  - id: s1                                # t_out lies in no area, so self.flaeche is empty
+    kind: run
+    task: kontrolle
+    actor: anna
+    feature: t_out
+    input: { vitalitaet: "v4", befund: Sturmschaden }
+  - id: s2                                # t_hole lies in the hole, so it has no area either
+    kind: run
+    task: kontrolle
+    actor: anna
+    feature: t_hole
+    input: { vitalitaet: "v1", befund: neu bewertet }
+then:
+  steps:
+    s1: { outcome: refused, refusal: bind_unresolved, no_trace: true }
+    s2: { outcome: refused, refusal: bind_unresolved, no_trace: true }
+  features:
+    t_out: { properties: { stage: erfasst } }

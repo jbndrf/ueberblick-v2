@@ -1,0 +1,294 @@
+# Synthetic v3 project definition (format 1, the key-based export). Built from the documented v3
+# shapes (reference/src/lib/server/definition/types.ts, workflow-model/*.ts), not from a real project.
+# It uses every configuration concept listed in docs/research/arch-01-config-inventory.md.
+format: 1
+version: 0
+source:
+  name: Baumkontrolle Musterstadt
+  description: Baumkataster mit Kontrolle und Maßnahmen (synthetisch)
+settings:
+  display_name: Baumkontrolle Musterstadt
+  map_defaults: { zoom: 13, min_zoom: 1, max_zoom: 19, center: { lat: 51.96, lng: 7.63 } }
+  startup_defaults:
+    base_layer_id: "@layer/osm"
+    overlay_layer_ids: ["@layer/dop"]
+    workflow_ids_visible: ["@workflow/baum", "@workflow/flaeche", "@workflow/leitung"]
+    enabled_features: []
+    visible_tag_values: {}
+  admin_presets:
+    - { name: Fällige Bäume, tool_key: filter.saved_views, config: {} }
+  consent_banner_title: Datenschutz
+  consent_banner_body: Wir speichern Ihre Eingaben.
+  consent_accept_label: Akzeptieren
+  consent_reject_label: Ablehnen
+  require_consent_before_login: true
+roles:
+  - { key: kontrolle, record: { name: Baumkontrolle, description: Kontrolleure im Feld, max_instances: 200 } }
+  - { key: bauhof, record: { name: Bauhof, description: "" } }
+  - { key: verwaltung, record: { name: Verwaltung } }
+custom_tables:
+  - key: baumart
+    record: { name: Baumart, sort_order: 0 }
+    columns:
+      - { column_name: name, column_type: text, sort_order: 0 }
+      - { column_name: hoehe_max, column_type: number, sort_order: 1 }
+      - { column_name: eingefuehrt, column_type: date, sort_order: 2 }
+      - { column_name: geschuetzt, column_type: boolean, sort_order: 3 }
+map_layers:
+  - { key: osm, record: { name: OpenStreetMap, source_type: preset, layer_type: base, url: "", display_order: 0, visible_to_roles: [], is_active: true, config: { opacity: 1 } } }
+  - { key: dop, record: { name: Luftbild, source_type: wms, layer_type: overlay, url: "https://example.org/wms", display_order: 1, visible_to_roles: ["@role/verwaltung"], is_active: true, config: { opacity: 0.7 } } }
+  - { key: kacheln, record: { name: Kacheln, source_type: tile, layer_type: overlay, url: "https://example.org/{z}/{x}/{y}.png", display_order: 2, visible_to_roles: [], is_active: true, config: { opacity: 1 } } }
+  - { key: gelaende, record: { name: Gelände, source_type: uploaded, layer_type: overlay, url: "", display_order: 3, visible_to_roles: [], is_active: false, config: { opacity: 1 } } }
+  - { key: grenzen, record: { name: Grenzen, source_type: geojson, layer_type: overlay, url: "https://example.org/grenzen.json", display_order: 4, visible_to_roles: [], is_active: true, config: { opacity: 1 } } }
+info_pages:
+  - { title: Hinweise, content: "<p>Bitte Helm tragen.</p>", sort_order: 0 }
+  - { title: Kontakt, content: "<p>Amt 67</p>", sort_order: 1 }
+relations:
+  - key: flaeche_baeume
+    record: { name: Bäume der Fläche, parent_workflow_id: "@workflow/flaeche", child_workflow_id: "@workflow/baum", kind: parent_child, multiplicity: many, attachment: enforced, geometry_mode: inherit, on_parent_delete: nullify }
+  - key: baum_patenschaft
+    record: { name: Patenschaft, parent_workflow_id: "@workflow/baum", child_workflow_id: "@workflow/leitung", kind: peer, multiplicity: single, attachment: optional, geometry_mode: draw, on_parent_delete: block }
+workflows:
+  - key: flaeche
+    record: { name: Fläche, description: Grünflächen, workflow_type: incident, geometry_type: polygon, marker_color: "#2e7d32", is_active: true, sort_order: 0, private_instances: false, visible_to_roles: [] }
+    field_defs:
+      - { key: name, record: { field_label: Name, field_type: short_text, write_mode: singleton, output_type: text } }
+      - { key: pflegeplan, record: { field_label: Pflegeplan, field_type: long_text, write_mode: observation } }
+    document:
+      version: 0
+      stages:
+        - { key: aktiv, name: Aktiv, type: start, position: { x: 0, y: 0 } }
+      edges: []
+      tasks:
+        - key: anlegen
+          name: Fläche anlegen
+          entry: true
+          activation: { mode: available }
+          conditions: [{ kind: role, role_ids: ["@role/verwaltung"] }]
+          tools:
+            - key: f
+              kind: form
+              field_refs:
+                - { field_def_id: "@field/name", order: 0, page: 1, row: 0, column: full, required: true, prefill: { kind: empty }, force_dirty: false }
+                - { field_def_id: "@field/pflegeplan", order: 1, page: 1, row: 1, column: full, required: false, prefill: { kind: empty }, force_dirty: false }
+          effects: [{ effect: create_instance }]
+  - key: baum
+    record: { name: Baum, description: Einzelbaum, workflow_type: incident, geometry_type: point, marker_color: "#27ae60", icon_config: { shape: circle, color: "#27ae60", size: 12 }, filter_value_icons: { vitalitaet: { v3: circle } }, is_active: true, sort_order: 1, private_instances: false, visible_to_roles: [] }
+    field_defs:
+      - { key: vitalitaet, record: { field_label: Vitalität, field_type: dropdown, field_options: { options: ["0", "1", "2", "3", "4"] }, write_mode: observation, write_roles: ["@role/kontrolle", "@role/verwaltung"] } }
+      - { key: befund, record: { field_label: Befund, field_type: long_text, validation_rules: { minLength: 3, maxLength: 500, pattern: "^[A-Za-z]" } } }
+      - { key: hoehe_m, record: { field_label: Höhe (m), field_type: number, validation_rules: { min: 0, max: 60, step: 0.5 } } }
+      - { key: kontakt, record: { field_label: Kontakt, field_type: email } }
+      - { key: kontrolldatum, record: { field_label: Kontrolldatum, field_type: date, field_options: { date_mode: date } } }
+      - { key: kontrollzeit, record: { field_label: Kontrollzeit, field_type: date, field_options: { date_mode: datetime } } }
+      - { key: uhrzeit, record: { field_label: Uhrzeit, field_type: date, field_options: { date_mode: time } } }
+      - { key: foto, record: { field_label: Foto, field_type: file, field_options: { allowed_file_types: [image/jpeg, image/png], max_files: 3 } } }
+      - { key: massnahmen, record: { field_label: Maßnahmen, field_type: multiple_choice, field_options: { options: [{ label: Fällen }, { label: Schnitt, description: Kronenschnitt }, Ersatz] } } }
+      - { key: schadart, record: { field_label: Schadart, field_type: smart_dropdown, field_options: { source_field: "@field/vitalitaet", mappings: [{ when: "3", options: [{ label: Fäulnis }, { label: Bruch }] }, { when: "4", options: [{ label: Bruch }, { label: Totholz }] }] } } }
+      - { key: art, record: { field_label: Baumart, field_type: custom_table_selector, field_options: { source_type: custom_table, custom_table_id: "@table/baumart", allow_multiple: false, display_field: name, value_field: name } } }
+      - { key: zustaendig, record: { field_label: Zuständig, field_type: custom_table_selector, field_options: { source_type: participants } } }
+      - { key: freigabe_rolle, record: { field_label: Freigabe durch, field_type: custom_table_selector, field_options: { source_type: roles } } }
+      - { key: flaeche_ref, record: { field_label: Fläche, field_type: instance_reference, field_options: { target_workflow_id: "@workflow/flaeche", multiplicity: single, on_delete: nullify, relation_kind: parent } } }
+      - { key: kinder, record: { field_label: Maßnahmen-Fälle, field_type: instance_reference, field_options: { target_workflow_id: "@workflow/massnahme", multiplicity: many, on_delete: cascade, relation_kind: child } } }
+      - { key: kronenflaeche, record: { field_label: Kronenfläche, field_type: number, write_mode: computed, output_type: number, compute_expression: "{hoehe_m} * 3.5", display_config: { tab: Messwerte, tabOrder: 0, row: 0, column: left } } }
+      - { key: interne_notiz, record: { field_label: Interne Notiz, field_type: short_text, view_roles: ["@role/verwaltung"], write_roles: ["@role/verwaltung"] } }
+      - { key: faellig, record: { field_label: Fällig am, field_type: date, field_options: { date_mode: date } } }
+      - { key: besichtigt, record: { field_label: Besichtigt, field_type: short_text, write_mode: singleton } }
+      - { key: pruefzahl, record: { field_label: Prüfzahl, field_type: number } }
+    document:
+      version: 0
+      stages:
+        - { key: erfasst, name: Erfasst, type: start, position: { x: 0, y: 0 } }
+        - { key: kontrolliert, name: Kontrolliert, type: intermediate, position: { x: 200, y: 0 } }
+        - { key: massnahme, name: Maßnahme, type: intermediate, position: { x: 400, y: 0 } }
+        - { key: erledigt, name: Erledigt, type: end, position: { x: 600, y: 0 } }
+      edges:
+        - { from_stage_key: erfasst, to_stage_key: kontrolliert, visual: {} }
+        - { from_stage_key: kontrolliert, to_stage_key: massnahme }
+        - { from_stage_key: massnahme, to_stage_key: erledigt }
+      tasks:
+        - key: erfassen
+          name: Baum erfassen
+          entry: true
+          visual: { button_label: Erfassen, button_color: "#3b82f6", button_icon: tree }
+          activation: { mode: available }
+          conditions:
+            - { kind: role, role_ids: ["@role/kontrolle", "@role/verwaltung"] }
+            - { kind: ownership, value: any }
+            - { kind: stage, op: in, stage_keys: [erfasst] }
+          tools:
+            - key: f
+              kind: form
+              config: { pages: 1 }
+              field_refs:
+                - { field_def_id: "@field/vitalitaet", order: 0, page: 1, row: 0, column: left, required: true, placeholder: bitte wählen, help_text: Vitalität nach Roloff, prefill: { kind: constant, value: "2" }, force_dirty: false }
+                - { field_def_id: "@field/art", order: 1, page: 1, row: 0, column: right, required: false, prefill: { kind: empty }, force_dirty: false }
+                - { field_def_id: "@field/hoehe_m", order: 2, page: 1, row: 1, column: left, required: false, prefill: { kind: empty }, force_dirty: false }
+                - { field_def_id: "@field/kontakt", order: 3, page: 1, row: 1, column: right, required: false, prefill: { kind: empty }, force_dirty: false }
+          effects: [{ effect: create_instance }, { effect: transition, to: erfasst }]
+        - key: kontrolle
+          name: Kontrolle durchführen
+          activation: { mode: available }
+          conditions:
+            - { kind: role, role_ids: ["@role/kontrolle"] }
+            - { kind: stage, op: in, stage_keys: [erfasst, kontrolliert] }
+            - { any: [{ kind: field, field_def_id: "@field/vitalitaet", op: is_not_empty }, { not: { kind: field, field_def_id: "@field/befund", op: is_empty } }] }
+          tools:
+            - key: f
+              kind: form
+              field_refs:
+                - { field_def_id: "@field/vitalitaet", order: 0, page: 1, row: 0, column: full, required: true, prefill: { kind: last_value }, force_dirty: true }
+                - { field_def_id: "@field/befund", order: 1, page: 1, row: 1, column: full, required: true, conditional_logic: { show_if: { all: [{ field_def_id: "@field/vitalitaet", op: gte, value: "3", value_type: number }] } }, prefill: { kind: empty }, force_dirty: false }
+                - { field_def_id: "@field/hoehe_m", order: 2, page: 2, row: 0, column: left, required: false, prefill: { kind: computed, expression: "{pruefzahl} * 2" }, force_dirty: false }
+                - { field_def_id: "@field/foto", order: 3, page: 2, row: 1, column: full, required: false, prefill: { kind: empty }, force_dirty: false }
+                - { field_def_id: "@field/besichtigt", order: 4, page: 2, row: 2, column: full, required: false, prefill: { kind: empty }, force_dirty: false, related: { relation_id: "@relation/flaeche_baeume", read_only: true } }
+            - key: schnell
+              kind: quick_edit
+              mode: fields
+              field_refs:
+                - { field_def_id: "@field/interne_notiz", order: 0, page: 1, row: 0, column: full, required: false, prefill: { kind: empty }, force_dirty: false }
+            - { key: alt, kind: automation, field_refs: [] }
+          effects:
+            - { effect: set_field, field_def_id: "@field/besichtigt", value: ja }
+            - { effect: compute, field_def_id: "@field/kronenflaeche", expression: "if({hoehe_m} > 10, {hoehe_m} * 4, {hoehe_m} * 2)" }
+            - { effect: transition, to: kontrolliert }
+            - { effect: snapshot, include_daughters: false }
+        - key: verschieben
+          name: Baum verschieben
+          activation: { mode: available }
+          conditions: [{ kind: role, role_ids: ["@role/kontrolle"] }, { kind: ownership, value: self }]
+          tools: [{ key: ort, kind: quick_edit, mode: location, field_refs: [] }]
+          effects: []
+        - key: massnahme_anlegen
+          name: Maßnahme anlegen
+          activation: { mode: available }
+          conditions: [{ kind: stage, op: equals, stage_keys: [massnahme] }, { kind: instance_status, status: active }]
+          tools: []
+          effects:
+            - { effect: create_instance, workflow: "@workflow/massnahme", geometry: inherit }
+            - { effect: create_instance, into_field: "@field/kinder", geometry: draw }
+            - { effect: set_field, field_def_id: "@field/faellig", expression: "{pruefzahl} + 1" }
+            - { effect: clear_field, field_def_id: "@field/befund" }
+        - key: pruefen
+          name: Alle Vergleiche prüfen
+          activation: { mode: available }
+          conditions:
+            - { kind: field, field_def_id: "@field/vitalitaet", op: equals, value: "2" }
+            - { kind: field, field_def_id: "@field/vitalitaet", op: not_equals, value: "0" }
+            - { kind: field, field_def_id: "@field/befund", op: contains, value: Pilz }
+            - { kind: field, field_def_id: "@field/massnahmen", op: includes, value: Fällen }
+            - { kind: field, field_def_id: "@field/massnahmen", op: not_includes, value: Ersatz }
+            - { kind: field, field_def_id: "@field/hoehe_m", op: gt, value: "5" }
+            - { kind: field, field_def_id: "@field/hoehe_m", op: gte, value: "5" }
+            - { kind: field, field_def_id: "@field/hoehe_m", op: lt, value: "50" }
+            - { kind: field, field_def_id: "@field/hoehe_m", op: lte, value: "50" }
+            - { kind: field, field_def_id: "@field/kontrolldatum", op: older_than_days, value: "365", aggregate: any }
+            - { kind: field, field_def_id: "@field/kontrolldatum", op: newer_than_days, value: "30" }
+            - { kind: field, field_def_id: "@field/pruefzahl", op: gt, value: "3", aggregate: count }
+            - { kind: field_to_field, field_def_id: "@field/hoehe_m", op: gt, other_field_def_id: "@field/pruefzahl" }
+            - { kind: related, via: "@field/flaeche_ref", quantifier: none, condition: { kind: instance_status, status: archived } }
+            - { kind: related, via: "@field/flaeche_ref", quantifier: all, condition: { kind: field, field_def_id: "@field/name", op: is_not_empty } }
+            - { kind: related, via: "@field/flaeche_ref" }
+          tools: [{ key: f, kind: form, field_refs: [{ field_def_id: "@field/befund", order: 0, page: 1, row: 0, column: full, required: false, prefill: { kind: empty }, force_dirty: false }] }]
+          effects: [{ effect: set_instance_status, status: archived }]
+        - key: abschliessen
+          name: Automatisch abschließen
+          activation: { mode: triggered, trigger_type: on_field_change, trigger_config: { field_key: "@field/besichtigt", stage_id: erledigt } }
+          conditions: [{ kind: instance_status, status: active }]
+          tools: []
+          effects: [{ effect: set_instance_status, status: completed }]
+        - key: rueckstellen
+          name: Befund zurücksetzen
+          activation: { mode: triggered, trigger_type: on_transition, trigger_config: { from_stage_id: kontrolliert, to_stage_id: massnahme } }
+          tools: []
+          effects: [{ effect: clear_field, field_def_id: "@field/befund" }]
+        - key: woechentlich
+          name: Wöchentliche Markierung
+          activation: { mode: triggered, trigger_type: scheduled, trigger_config: { cron: "0 6 * * 1", target_stage_id: erfasst, inactive_days: 30 } }
+          tools: []
+          effects: [{ effect: set_field, field_def_id: "@field/besichtigt", value: fällig }]
+      automations:
+        - key: nach_kontrolle
+          name: Nach Kontrolle
+          trigger: { type: on_transition, from_stage_key: erfasst, to_stage_key: kontrolliert }
+          execution_mode: run_all
+          steps:
+            - name: Hohe Bäume
+              when: [{ kind: field, field_def_id: "@field/hoehe_m", op: gt, value: "20" }]
+              do: [{ effect: set_field, field_def_id: "@field/besichtigt", value: hoch }]
+            - name: Immer
+              when: []
+              do: [{ effect: set_field, field_def_id: "@field/faellig", value: "2027-01-01" }]
+        - key: vitalitaet_prio
+          name: Vitalität priorisieren
+          trigger: { type: on_field_change, field_def_ids: ["@field/vitalitaet"], in_stage_key: kontrolliert }
+          execution_mode: first_match
+          steps:
+            - { name: Kritisch, when: [{ kind: field, field_def_id: "@field/vitalitaet", op: gte, value: "4", value_type: number }], do: [{ effect: transition, to: massnahme }] }
+            - { name: Sonst, when: [{ kind: stage, op: in, stage_keys: [kontrolliert] }], do: [{ effect: set_field, field_def_id: "@field/besichtigt", value: ok }] }
+        - key: bei_neu
+          name: Bei neuem Baum
+          trigger: { type: on_create }
+          steps: [{ name: Start, when: [], do: [{ effect: set_field, field_def_id: "@field/besichtigt", value: neu }] }]
+        - key: nachts
+          name: Nächtliche Prüfung
+          trigger: { type: scheduled, cron: "0 2 * * *", in_stage_key: erfasst, if_inactive_days: 7 }
+          steps: [{ name: Markieren, when: [], do: [{ effect: set_field, field_def_id: "@field/besichtigt", value: alt }] }]
+        - key: sla
+          name: Frist überschritten
+          trigger: { type: elapsed, after: 7d, since: entered_stage }
+          steps: [{ name: Eskalieren, when: [{ kind: stage, op: in, stage_keys: [massnahme] }], do: [{ effect: transition, to: erledigt }] }]
+        - key: bedingung
+          name: Bedingung erfüllt
+          trigger: { type: when, conditions: [{ kind: field, field_def_id: "@field/hoehe_m", op: gt, value: "40" }] }
+          steps: [{ name: Melden, when: [], do: [{ effect: set_field, field_def_id: "@field/besichtigt", value: sehr hoch }] }]
+        - key: nach_task
+          name: Nach Kontrolle (Task)
+          trigger: { type: on_task_run, task_key: kontrolle }
+          steps: [{ name: Vermerk, when: [], do: [{ effect: snapshot }] }]
+        - key: nach_ergebnis
+          name: Nach Ergebnis
+          trigger: { type: on_task_outcome, task_key: kontrolle, outcome: transition }
+          steps: [{ name: Vermerk, when: [], do: [{ effect: set_field, field_def_id: "@field/besichtigt", value: fertig }] }]
+      data_views:
+        tabs:
+          - { name: Messwerte, order: 0, fields: [{ field_def_id: "@field/hoehe_m", row: 0, column: left }, { field_def_id: "@field/kronenflaeche", row: 0, column: right }] }
+          - { name: Notizen, order: 1, fields: [{ field_def_id: "@field/befund", row: 0, column: full }] }
+    field_tags:
+      - tag_mappings:
+          - { tagType: filterable, fieldId: "@field/vitalitaet", config: { filterBy: field } }
+          - { tagType: filterable, fieldId: null, config: { filterBy: stage } }
+  - key: massnahme
+    record: { name: Maßnahme, workflow_type: incident, geometry_type: point, is_active: true, sort_order: 2, visible_to_roles: ["@role/bauhof", "@role/verwaltung"] }
+    field_defs:
+      - { key: art, record: { field_label: Art, field_type: dropdown, field_options: { options: [Fällen, Schnitt] } } }
+    document:
+      version: 0
+      stages:
+        - { key: offen, name: Offen, type: start }
+        - { key: fertig, name: Fertig, type: end }
+      edges: []
+      tasks:
+        - key: neu
+          name: Maßnahme erfassen
+          entry: true
+          activation: { mode: available }
+          conditions: [{ kind: role, role_ids: ["@role/bauhof"] }]
+          tools: [{ key: f, kind: form, field_refs: [{ field_def_id: "@field/art", order: 0, page: 1, row: 0, column: full, required: true, prefill: { kind: empty }, force_dirty: false }] }]
+          effects: [{ effect: create_instance }]
+  - key: leitung
+    record: { name: Leitung, workflow_type: survey, geometry_type: line, is_active: true, sort_order: 3, visible_to_roles: [] }
+    field_defs:
+      - { key: bezeichnung, record: { field_label: Bezeichnung, field_type: short_text } }
+    document:
+      version: 0
+      stages: [{ key: bestand, name: Bestand, type: start }]
+      edges: []
+      tasks:
+        - key: neu
+          name: Leitung erfassen
+          entry: true
+          activation: { mode: available }
+          conditions: []
+          tools: [{ key: f, kind: form, field_refs: [{ field_def_id: "@field/bezeichnung", order: 0, page: 1, row: 0, column: full, required: true, prefill: { kind: empty }, force_dirty: false }] }]
+          effects: []

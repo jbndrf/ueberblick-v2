@@ -1,0 +1,50 @@
+scenario: run_against_recorded_config_version
+title: "A queued run is planned against the config version it recorded, not the newest one"
+foundations: [F3, F7, F12]
+capabilities: [config_version, upgrade_auto_change]
+given:
+  project: projects/musterstadt-plain.yaml
+  include: [seeds/musterstadt-geo.yaml]
+  now: "2026-05-01T08:00:00Z"
+  config_version: 1
+when:
+  - id: s1                                # a new config version 2 is deployed: intervall 6 instead of 12 months
+    kind: upgrade
+    to: templates/baumkataster/1.1.0.yaml
+    overlay_inputs: { kontrollintervall_monate: 6 }
+    deploys_config_version: 2
+  - id: s2                                # an offline device sends a run that recorded config_version 1
+    kind: run
+    task: kontrolle
+    actor: anna
+    feature: t_in
+    config_version: 1
+    input: { vitalitaet: "v2", befund: Offline erfasst }
+  - id: s3                                # a run recorded against version 2 uses the new interval
+    kind: run
+    task: kontrolle
+    actor: anna
+    feature: t_in
+    config_version: 2
+    input: { vitalitaet: "v2", befund: Online erfasst }
+  - id: s4                                # a run recorded against a version that no longer exists goes to review
+    kind: run
+    task: kontrolle
+    actor: anna
+    feature: t_in
+    config_version: 99
+    input: { vitalitaet: "v2", befund: Unbekannte Version }
+then:
+  steps:
+    s1: { outcome: accepted, config_version: 2 }
+    s2:
+      outcome: accepted
+      recorded_config_version: 1
+      observations:
+        - { feature: t_in, property: faellig_am, result: "2027-05-01" }      # 12 months, the old config
+    s3:
+      outcome: accepted
+      recorded_config_version: 2
+      observations:
+        - { feature: t_in, property: faellig_am, result: "2026-11-01" }      # 6 months, the new config
+    s4: { outcome: review, reason: config_version_gone, no_trace: true }

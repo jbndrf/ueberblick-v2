@@ -1,0 +1,46 @@
+scenario: overlay_add_override_hide
+title: "The effective config is template plus overlay; every element is marked template, changed or added, and hidden elements are gone"
+foundations: [F7, F13]
+capabilities: [overlay_add, overlay_override, overlay_hide, template_inputs]
+given:
+  project: projects/musterstadt-baeume.yaml
+  include: [seeds/musterstadt-geo.yaml]
+  now: "2026-05-01T08:00:00Z"
+when:
+  - id: s1
+    kind: compile
+  - id: s2                                            # the hidden task cannot be run
+    kind: run
+    task: erfassung_import
+    actor: { kind: import, id: kataster }
+    input: {}
+  - id: s3                                            # the overlay's input value drives the derived date: 18 months
+    kind: run
+    task: kontrolle
+    actor: anna
+    feature: t_in
+    input: { vitalitaet: "v2", befund: Routine }
+  - id: s4                                            # no tree carries a sponsorship yet, so the added view is empty
+    kind: view
+    view: paten
+    actor: vera
+then:
+  steps:
+    s1:
+      problems: []
+      resolved_template: baumkataster@1.1.0
+      origin:
+        tasks.kontrolle.label: changed
+        tasks.kontrolle.form: template
+        types.baum.properties.patenschaft: added
+        views.paten: added
+        types.baum.properties.standort_hinweis: template
+      absent: [tasks.erfassung_import]
+    s2: { outcome: refused, refusal: unknown_task, no_trace: true }
+    s3:
+      outcome: accepted
+      observations: [{ feature: t_in, property: faellig_am, result: "2027-11-01" }]
+    s4: { ids: [] }
+  effective:
+    tasks.kontrolle.label: { de: Regelkontrolle, en: Routine inspection }
+    types.baum.properties.vitalitaet.label: { de: Vitalität (Roloff), en: Vitality (Roloff) }

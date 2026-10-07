@@ -1,0 +1,27 @@
+# Nicht ins Image / not into the image
+.git
+.claude
+.githooks
+node_modules
+**/node_modules
+**/build
+**/.svelte-kit
+**/dist
+**/coverage
+**/test-results
+**/playwright-report
+data
+.env
+*.db
+*.db-wal
+*.db-shm
+reference
+reviews
+work
+metrics
+spikes
+bench
+ops
+docs
+e2e
+apps/web/e2e

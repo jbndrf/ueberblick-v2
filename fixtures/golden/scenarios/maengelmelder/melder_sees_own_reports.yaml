@@ -1,0 +1,31 @@
+scenario: melder_sees_own_reports
+title: "H3. A melder reads her own reports (the property melder included), starts on her own list, and the handwerker still never sees who reported"
+foundations: [F6, F7]
+capabilities: [h3_role_app, permission_see, visible_when]
+given:
+  project: projects/stadtwerke-meldungen.yaml
+  include: [seeds/stadtwerke.yaml]
+  participants:
+    max: { roles: [melder] }
+  now: "2026-05-01T08:00:00Z"
+  features:
+    m_mia:
+      type: meldung
+      properties: { geometrie: { type: Point, coordinates: [7.10, 50.75] }, kategorie: strasse, melder: mia, status: offen }
+    m_mia_ohne:
+      type: meldung
+      properties: { kategorie: muell, melder: mia, status: offen }
+    m_max:
+      type: meldung
+      properties: { geometrie: { type: Point, coordinates: [7.12, 50.76] }, kategorie: muell, melder: max, status: offen }
+when:
+  - { id: s1, kind: view, view: meine_meldungen, actor: mia, limit_properties: [melder, kategorie] }
+  - { id: s2, kind: view, view: meine_meldungen, actor: max, limit_properties: [melder, kategorie] }
+  - { id: s3, kind: view, view: lagekarte, actor: hans, limit_properties: [melder, kategorie] }   # the handwerker sees the row, never who reported
+  - { id: s4, kind: app_profile, actor: mia }
+then:
+  steps:
+    s1: { rows: { m_mia: { melder: mia, kategorie: strasse }, m_mia_ohne: { melder: mia, kategorie: muell } } }
+    s2: { rows: { m_max: { melder: max, kategorie: muell } } }
+    s3: { absent_properties: [melder] }
+    s4: { profile: { home: meine_meldungen, views: [meine_meldungen], tools: [photo, search], shortcuts: [melden] } }

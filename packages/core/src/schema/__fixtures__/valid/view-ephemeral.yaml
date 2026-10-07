@@ -1,0 +1,3 @@
+# An ephemeral view created at runtime (H4).
+source: { type: baum, filter: "self.stage == 'massnahme'" }
+sort: [-faellig_am]

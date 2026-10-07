@@ -1,0 +1,29 @@
+baum:
+  marker:
+    icon:
+      svg: <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg>
+      size: 24
+    color: "#16a34a"
+  classify:
+    property: stage
+    values:
+      neu:
+        color: "#dc2626"
+        icon:
+          svg: <svg viewBox="0 0 24 24"><path d="M2 2h20v20H2z"/></svg>
+          size: 40
+leitung:
+  classify:
+    property: zustand
+    values:
+      gut:
+        color: "#16a34a"
+        icon:
+          svg: <svg viewBox="0 0 24 24"><path d="M2 2h20v20H2z"/></svg>
+          size: 32
+flaeche:
+  marker:
+    color: "#2e7d32"
+rohr:
+  marker:
+    color: "#123456"

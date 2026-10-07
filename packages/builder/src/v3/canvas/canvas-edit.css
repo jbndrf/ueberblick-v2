@@ -1,0 +1,126 @@
+/* The editing look of the canvas (WP-435), ported from v3's Tailwind classes (task-canvas/TaskToolbarList.svelte, TaskCanvas.svelte:488). */
+
+/* "Phase hinzufügen", top left (v3 `absolute top-3 left-3 z-10`) */
+.canvas-root .canvas-tools {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  right: 0.75rem;
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  /* only the controls take the pointer; the graph under the gaps stays reachable */
+  pointer-events: none;
+}
+.canvas-root .canvas-tools > * {
+  pointer-events: auto;
+}
+.canvas-root .add-icon {
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.25rem;
+}
+
+/* the grip: drag to reorder the buttons of a scope. Pointer events, so it must not scroll or pan on touch. */
+.canvas-root .grip {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: color-mix(in srgb, var(--muted-foreground) 60%, transparent);
+  cursor: grab;
+  touch-action: none;
+}
+.canvas-root .grip:active,
+.canvas-root .grip[data-dragging] {
+  cursor: grabbing;
+}
+.canvas-root .grip-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+/* tool icons: drag to move (Alt copies) a step to another button; Space picks one up for the keyboard */
+.canvas-root .tool {
+  cursor: grab;
+  touch-action: none;
+}
+.canvas-root .tool:hover {
+  color: var(--foreground);
+}
+.canvas-root .tool:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+}
+.canvas-root .tool[data-dragging],
+.canvas-root .tool.carried {
+  cursor: grabbing;
+  color: var(--primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 40%, transparent);
+}
+
+/* where a drag would drop */
+.canvas-root .toolbar[data-drop],
+.canvas-root .add-task[data-drop] {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 8%, var(--background));
+}
+.canvas-root .toolbar.carry-target {
+  border-style: dashed;
+  border-color: var(--primary);
+}
+
+/* "Button hinzufügen" (v3: dashed, small, muted) */
+.canvas-root .add-task {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0;
+  border: 1px dashed var(--border);
+  border-radius: 0.375rem;
+  background: none;
+  font: inherit;
+  font-size: 11px;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+.canvas-root .add-task:hover,
+.canvas-root .add-task:focus-visible {
+  border-color: color-mix(in srgb, var(--primary) 50%, transparent);
+  color: var(--foreground);
+  outline: none;
+}
+.canvas-root .add-task:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+}
+.canvas-root .add-task .add-icon {
+  width: 0.75rem;
+  height: 0.75rem;
+  margin: 0;
+}
+
+/* a task's arrow: selectable, so it shows when it is */
+.canvas-root .svelte-flow__edge.selectable:focus-visible .svelte-flow__edge-path,
+.canvas-root .svelte-flow__edge.selected .svelte-flow__edge-path {
+  stroke: var(--primary);
+}
+
+/* what the last gesture said: a refusal or a copied key */
+.canvas-root .canvas-note {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  z-index: 20;
+  max-width: min(28rem, calc(100% - 1.5rem));
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--popover);
+  color: var(--popover-foreground);
+  font-size: 0.8125rem;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.12);
+}

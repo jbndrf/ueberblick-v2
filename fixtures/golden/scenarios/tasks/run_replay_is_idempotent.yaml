@@ -1,0 +1,36 @@
+scenario: run_replay_is_idempotent
+title: "Sending the same run id twice returns the stored result and adds nothing; a changed payload or another actor is refused"
+foundations: [F1, F2, F3, F12]
+capabilities: [idempotency]
+given:
+  project: projects/musterstadt-plain.yaml
+  include: [seeds/musterstadt-geo.yaml]
+  now: "2026-05-01T08:00:00Z"
+when:
+  - id: s1
+    kind: run
+    run_id: 01900000-0000-7000-8000-000000000001     # UUIDv7 minted on the device
+    task: kontrolle
+    actor: anna
+    feature: t_in
+    input: { vitalitaet: "v2", befund: Erstbefund }
+  - id: s2
+    kind: replay
+    of: s1
+  - id: s3                                           # same id, changed payload: bound to the first payload, refused
+    kind: replay_refused
+    of: s1
+    input: { vitalitaet: "v4", befund: Manipuliert }
+  - id: s4                                           # same id, other actor: bound to the first actor, refused
+    kind: replay_refused
+    of: s1
+    actor: bernd
+then:
+  steps:
+    s1: { outcome: accepted }
+    s2: { outcome: accepted, same_result_as: s1, new_observations: 0 }
+    s3: { outcome: refused, refusal: id_taken, no_trace: true, new_observations: 0 }
+    s4: { outcome: refused, refusal: id_taken, no_trace: true, new_observations: 0 }
+  features:
+    t_in: { properties: { vitalitaet: "v2", befund: Erstbefund } }
+  ledger: { runs_total: 1 }

@@ -1,0 +1,42 @@
+scenario: own_lists_without_position
+title: "H3. The own-list of a role shows its features although some have no position: a work order is listed for its handwerker, a report for its melder"
+foundations: [F4, F6, F7]
+capabilities: [h3_role_app, no_geometry, permission_see]
+given:
+  project: projects/stadtwerke-meldungen.yaml
+  include: [seeds/stadtwerke.yaml]
+  participants:
+    max: { roles: [melder] }
+  now: "2026-05-01T08:00:00Z"
+  features:
+    m_mia:                                  # has a position
+      type: meldung
+      properties: { geometrie: { type: Point, coordinates: [7.10, 50.75] }, kategorie: strasse, melder: mia, status: offen }
+    m_mia_ohne:                             # a report whose position was never captured
+      type: meldung
+      properties: { kategorie: muell, melder: mia, status: offen }
+    m_max:
+      type: meldung
+      properties: { geometrie: { type: Point, coordinates: [7.12, 50.76] }, kategorie: muell, melder: max, status: offen }
+    e_hans_neu:                             # a work order type has no geometry property at all
+      type: einsatz
+      properties: { titel: Schlagloch füllen, zustaendig: hans, status: neu }
+    e_hans_fertig:
+      type: einsatz
+      properties: { titel: Laterne tauschen, zustaendig: hans, status: fertig }
+    e_hilde_arbeit:
+      type: einsatz
+      properties: { titel: Sperrmüll abholen, zustaendig: hilde, status: in_arbeit }
+when:
+  - { id: s1, kind: view, view: meine_meldungen, actor: mia }
+  - { id: s2, kind: view, view: meine_meldungen, actor: max }
+  - { id: s3, kind: view, view: meine_einsaetze, actor: hans }
+  - { id: s4, kind: view, view: meine_einsaetze, actor: hilde }
+  - { id: s5, kind: view, view: meine_einsaetze, actor: mia }       # a melder has no work orders
+then:
+  steps:
+    s1: { ids: [m_mia, m_mia_ohne] }
+    s2: { ids: [m_max] }
+    s3: { ids: [e_hans_neu] }                                         # the finished one is filtered out by the view
+    s4: { ids: [e_hilde_arbeit] }
+    s5: { ids: [] }

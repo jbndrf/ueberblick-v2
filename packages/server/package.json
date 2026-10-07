@@ -1,0 +1,21 @@
+{
+  "name": "@ueberblick/server",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "description": "Server: SQLite adapters implementing core ports (docs/03-architecture.md).",
+  "dependencies": {
+    "@ueberblick/core": "*",
+    "better-sqlite3": "^12.0.0",
+    "pmtiles": "^4.5.0",
+    "sharp": "^0.34.5",
+    "yaml": "^2.9.1",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13"
+  }
+}

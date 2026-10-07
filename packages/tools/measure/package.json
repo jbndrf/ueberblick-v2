@@ -1,0 +1,18 @@
+{
+  "name": "@ueberblick/tool-measure",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "sideEffects": false,
+  "description": "Measure tool: distance and area of points the user places, through core.geo; a map-toolbar tool that only reads.",
+  "scripts": {
+    "i18n": "paraglide-js compile --project ./project.inlang --outdir ./src/paraglide"
+  },
+  "dependencies": {
+    "@ueberblick/core": "*",
+    "@ueberblick/ui": "*"
+  }
+}
